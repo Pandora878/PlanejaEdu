@@ -2,115 +2,126 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#4f46e5">
-  <title>PlanejaEdu — Gestão pedagógica inteligente</title>
-  <link rel="icon" href="assets/planejaedu-logo.png">
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PlanejaEdu — Gestão pedagógica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="index.html">
-      <img src="assets/planejaedu-logo.png" alt="PlanejaEdu">
-    </a>
-    <nav>
-      <a href="#sobre">⌘ <span>Sobre</span></a>
-      <a href="#ajuda">? <span>Ajuda</span></a>
-      <a href="#suporte">◉ <span>Suporte</span></a>
-      <button id="adminBtn" class="admin-top">⚙ <span>Área Admin</span></button>
-    </nav>
-  </header>
+<div id="toast"></div>
+<header class="topbar">
+  <a class="brand" href="#inicio">
+    <span class="brand-mark"><span></span><span></span><span></span></span>
+    <span><b>Planeja<span>Edu</span></b><small>Gestão pedagógica inteligente</small></span>
+  </a>
+  <nav>
+    <a href="#inicio">Início</a>
+    <a href="#meus-planos">Meus planos</a>
+    <a href="#novo-plano">Criar plano</a>
+  </nav>
+  <div class="top-actions">
+    <span id="userLabel" class="user-label"></span>
+    <button id="adminBtn" class="btn btn-outline hidden">⚙ Área Admin</button>
+    <button id="logoutBtn" class="btn btn-dark hidden">Sair</button>
+  </div>
+</header>
 
-  <main class="hero" id="sobre">
-    <div class="hero-photo"></div>
-    <div class="hero-overlay"></div>
-
-    <section class="hero-copy">
-      <p class="eyebrow">PLANEJAMENTO ESCOLAR</p>
-      <h1>Seu planejamento.<br><span>Mais organizado.</span></h1>
-      <p class="lead">Crie, organize e acompanhe seus planos de aula com uma experiência simples, elegante e profissional.</p>
-
-      <div class="features">
-        <div><i>▢</i><span>Planos organizados<br>por turma e disciplina</span></div>
-        <div><i>♙</i><span>Gestão de conteúdos<br>e materiais de apoio</span></div>
-        <div><i>▤</i><span>Impressão e PDF com<br>cabeçalho institucional</span></div>
-        <div><i>◫</i><span>Acompanhamento<br>e organização pedagógica</span></div>
+<main id="app">
+  <section id="loginView" class="auth-page">
+    <div class="auth-copy">
+      <span class="eyebrow">PLANEJAMENTO ESCOLAR</span>
+      <h1>Seu planejamento.<br><em>Mais organizado.</em></h1>
+      <p>Crie, organize e acompanhe seus planos de aula em um ambiente profissional, simples e feito para a rotina docente.</p>
+      <div class="feature-list">
+        <div><i>✓</i><span>Planos organizados por turma e disciplina</span></div>
+        <div><i>✓</i><span>Seus planos salvos na sua conta</span></div>
+        <div><i>✓</i><span>Impressão e PDF com cabeçalho institucional</span></div>
+        <div><i>✓</i><span>Área exclusiva para administração</span></div>
       </div>
-
-      <div class="slogan">Educação<br>que transforma ♡</div>
-    </section>
-
-    <section class="auth-card" id="authCard">
-      <div class="demo-banner">
-        <div class="demo-icon">🎁</div>
-        <div>
-          <strong>Modo demonstração</strong>
-          <span>Explore a plataforma gratuitamente.<br>Os planos criados neste modo não são salvos.</span>
-        </div>
-        <b>→</b>
-      </div>
-
+    </div>
+    <div class="auth-card">
+      <div class="demo-banner"><b>Modo demonstração</b><span>Explore a plataforma sem salvar dados.</span></div>
       <div class="tabs">
-        <button id="tabLogin" class="tab active">Entrar</button>
-        <button id="tabSignup" class="tab">Criar conta</button>
+        <button class="tab active" data-tab="login">Entrar</button>
+        <button class="tab" data-tab="register">Criar conta</button>
       </div>
-
-      <div id="alertBox" class="alert"></div>
-      <div id="loading" class="loading">Processando...</div>
-
-      <form id="loginForm">
+      <div id="loginForm">
         <h2>Bem-vindo(a) de volta!</h2>
-        <p class="sub">Entre para acessar seus planejamentos.</p>
-
-        <label>E-mail</label>
-        <div class="input-wrap"><span>✉</span><input id="email" type="email" autocomplete="email" value="" placeholder="seu@email.com" required></div>
-
-        <label>Senha</label>
-        <div class="input-wrap"><span>⌑</span><input id="password" type="password" autocomplete="current-password" placeholder="Sua senha" required><button type="button" class="eye" onclick="this.previousElementSibling.type=this.previousElementSibling.type==='password'?'text':'password'">◉</button></div>
-
-        <div class="remember">
-          <label><input type="checkbox" checked> <span>Lembrar de mim</span></label>
-          <button type="button" id="forgotPassword">Esqueci minha senha?</button>
-        </div>
-
-        <button class="primary" type="submit">Entrar na plataforma <span>→</span></button>
-
+        <p class="muted">Entre para acessar seus planejamentos.</p>
+        <label>E-mail<input id="email" type="email" placeholder="seu@email.com"></label>
+        <label>Senha<input id="password" type="password" placeholder="Sua senha"></label>
+        <div class="form-row"><label class="check"><input id="remember" type="checkbox" checked> Lembrar de mim</label><button id="forgot" class="link-btn">Esqueci minha senha</button></div>
+        <button id="loginBtn" class="btn btn-primary wide">Entrar na plataforma <span>→</span></button>
         <div class="divider"><span>ou</span></div>
-
-        <button class="google" id="googleBtn" type="button"><b>G</b> Entrar com Google</button>
-
-        <p class="auth-status" id="authStatus">Use sua conta cadastrada no Firebase.</p>
-      </form>
-
-      <form id="signupForm" class="hidden">
+        <button id="googleBtn" class="btn btn-google wide">G&nbsp; Entrar com Google</button>
+        <button id="demoBtn" class="btn btn-soft wide">Conhecer em modo demonstração</button>
+      </div>
+      <div id="registerForm" class="hidden">
         <h2>Crie sua conta</h2>
-        <p class="sub">Cadastre seu acesso para começar a planejar.</p>
+        <p class="muted">Cadastre seu acesso para começar a planejar.</p>
+        <label>Nome completo<input id="regName" placeholder="Seu nome"></label>
+        <label>E-mail<input id="regEmail" type="email" placeholder="seu@email.com"></label>
+        <label>Senha<input id="regPassword" type="password" placeholder="Mínimo de 6 caracteres"></label>
+        <label>Confirmar senha<input id="regPassword2" type="password" placeholder="Repita a senha"></label>
+        <button id="registerBtn" class="btn btn-primary wide">Criar minha conta <span>→</span></button>
+      </div>
+      <small class="security">🔒 Seus dados são protegidos pelo Firebase.</small>
+    </div>
+  </section>
 
-        <label>Nome completo</label>
-        <div class="input-wrap"><span>♙</span><input id="name" type="text" placeholder="Seu nome" required></div>
+  <section id="dashboardView" class="dashboard hidden">
+    <div class="welcome">
+      <div><span class="eyebrow">MEU ESPAÇO</span><h1>Olá, <span id="welcomeName">professora</span> 👋</h1><p>Organize sua rotina e encontre seus planos em poucos cliques.</p></div>
+      <button class="btn btn-primary" data-go="#novo-plano">+ Novo plano de aula</button>
+    </div>
+    <div class="stats">
+      <article><span class="stat-icon purple">▣</span><div><strong id="totalPlans">0</strong><small>Planos criados</small></div></article>
+      <article><span class="stat-icon blue">◫</span><div><strong id="monthPlans">0</strong><small>Neste mês</small></div></article>
+      <article><span class="stat-icon green">✓</span><div><strong>Firebase</strong><small>Conta sincronizada</small></div></article>
+    </div>
+    <div class="section-head" id="meus-planos"><div><span class="eyebrow">BIBLIOTECA</span><h2>Meus planos de aula</h2></div><input id="searchPlans" class="search" placeholder="🔎  Buscar por título, turma ou disciplina"></div>
+    <div id="plansGrid" class="plans-grid"></div>
+  </section>
 
-        <label>E-mail</label>
-        <div class="input-wrap"><span>✉</span><input id="signupEmail" type="email" placeholder="seu@email.com" required></div>
+  <section id="newPlanView" class="workspace hidden">
+    <div class="workspace-head"><div><button class="back" data-go="#meus-planos">← Voltar</button><span class="eyebrow">NOVO PLANEJAMENTO</span><h1>Criar plano de aula</h1><p>Preencha os campos e salve no seu espaço pessoal.</p></div><div><button id="savePlanBtn" class="btn btn-primary">Salvar plano</button></div></div>
+    <div class="plan-form">
+      <div class="form-section"><h3>Identificação</h3><div class="form-grid">
+        <label>Título do plano<input id="pTitle" placeholder="Ex.: Descobrindo as cores"></label>
+        <label>Data<input id="pDate" type="date"></label>
+        <label>Ano / turma<select id="pGrade"><option>Educação Infantil</option><option>Pré I</option><option>Pré II</option><option>1º ano</option><option>2º ano</option><option>3º ano</option><option>4º ano</option><option>5º ano</option></select></label>
+        <label>Disciplina<select id="pSubject"><option>Português</option><option>Matemática</option><option>Ciências</option><option>História</option><option>Geografia</option><option>Ensino Religioso</option><option>Arte</option><option>Educação Física</option><option>Projetos interdisciplinares</option></select></label>
+        <label>Escola / instituição<input id="pSchool" placeholder="Nome da escola"></label>
+        <label>Modalidade<select id="pMode"><option>Regular</option><option>Integral</option></select></label>
+      </div></div>
+      <div class="form-section"><h3>Planejamento pedagógico</h3>
+        <label>Objetivos de aprendizagem<textarea id="pObjectives" placeholder="Descreva os objetivos..."></textarea></label>
+        <label>Habilidades / BNCC<textarea id="pBncc" placeholder="Informe as habilidades e códigos, quando aplicável..."></textarea></label>
+        <label>Conteúdo<textarea id="pContent" placeholder="Conteúdos que serão trabalhados..."></textarea></label>
+        <label>Metodologia<textarea id="pMethod" placeholder="Descreva passo a passo como a aula será conduzida..."></textarea></label>
+        <label>Recursos didáticos<textarea id="pResources" placeholder="Materiais, recursos digitais, livros, jogos..."></textarea></label>
+        <label>Avaliação<textarea id="pAssessment" placeholder="Como será observada e registrada a aprendizagem?"></textarea></label>
+        <label>Observações<textarea id="pNotes" placeholder="Observações adicionais..."></textarea></label>
+      </div>
+    </div>
+  </section>
+</main>
 
-        <label>Senha</label>
-        <div class="input-wrap"><span>⌑</span><input id="signupPassword" type="password" minlength="6" placeholder="Mínimo de 6 caracteres" required></div>
+<div id="adminModal" class="modal hidden">
+  <div class="modal-card admin-card">
+    <button class="modal-close" id="closeAdmin">×</button>
+    <span class="eyebrow">ADMINISTRAÇÃO</span><h2>Área Admin</h2>
+    <p class="muted">Gerencie professoras, permissões e configurações de acesso.</p>
+    <div class="admin-grid">
+      <div class="admin-box"><b>Usuário autenticado</b><span id="adminUid"></span></div>
+      <div class="admin-box"><b>Professores cadastrados</b><span id="teacherCount">—</span></div>
+    </div>
+    <div class="admin-section"><h3>Conceder acesso administrativo</h3><p class="muted small">Digite o UID de um usuário para criar/atualizar o documento em <code>/admin/UID</code>.</p><div class="inline"><input id="adminUidInput" placeholder="UID do Firebase"><button id="grantAdminBtn" class="btn btn-primary">Conceder</button></div></div>
+    <div class="admin-section"><h3>Observação</h3><p class="muted small">A segurança real continua nas regras do Firestore. O botão visual não concede privilégios sozinho.</p></div>
+  </div>
+</div>
 
-        <label>Confirmar senha</label>
-        <div class="input-wrap"><span>⌑</span><input id="confirmPassword" type="password" minlength="6" placeholder="Repita a senha" required></div>
-
-        <button class="primary" type="submit">Criar minha conta <span>→</span></button>
-      </form>
-
-      <button id="demoBtn" class="demo-btn" type="button">Conhecer em modo demonstração</button>
-      <p class="privacy">🔒 Seus dados são tratados com segurança pelo Firebase.</p>
-    </section>
-  </main>
-
-  <footer id="suporte">
-    <div><strong>PlanejaEdu</strong> <span>Gestão de planos de aula</span></div>
-    <div><span>Versão 1.0.0</span><a href="#">Termos de uso</a><a href="#">Política de privacidade</a><a href="#">Suporte</a></div>
-  </footer>
-
-  <script type="module" src="app.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>

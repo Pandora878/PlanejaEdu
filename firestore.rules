@@ -1,72 +1,52 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    match /admin/{userId} {
-      // Somente a própria conta pode ler seu registro administrativo.
-      // Escrita sempre deve ser feita manualmente pelo proprietário/admin SDK.
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow create, update, delete: if false;
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isMainAdmin() {
+      return signedIn() &&
+        request.auth.uid == "BDmAQWzHytWVucAsuy4JiCOlIgB2";
     }
 
     function isAdmin() {
-      return request.auth != null
-        && exists(/databases/$(database)/documents/admin/$(request.auth.uid))
-        && get(/databases/$(database)/documents/admin/$(request.auth.uid)).data.role == "admin";
+      return isMainAdmin() ||
+        (signedIn() &&
+         exists(/databases/$(database)/documents/admin/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/admin/$(request.auth.uid)).data.role == "admin");
     }
 
-    function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
+    match /admin/{uid} {
+      allow read: if isAdmin() || isOwner(uid);
+      allow create, update, delete: if isMainAdmin();
     }
 
-    match /usuarios/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-
-      // A conta só pode ser criada como professora; ninguém pode criar uma conta admin pelo cliente.
-      allow create: if isOwner(userId)
-        && request.resource.data.role == "teacher"
-        && request.resource.data.accessStatus == "pending"
-        && request.resource.data.paymentStatus == "pending"
-        && request.resource.data.allowedStages.size() == 0
-        && request.resource.data.allowedSubjects.size() == 0
-        && request.resource.data.features.criarPlano == false;
-
-      // Só o administrador pode alterar permissões, instituição, acesso, pagamento e observações.
-      // A professora pode apenas registrar o pedido de pagamento.
-      allow update: if isAdmin() || (
-        isOwner(userId)
-        && request.resource.data.role == resource.data.role
-        && request.resource.data.accessStatus == resource.data.accessStatus
-        && request.resource.data.paymentStatus == resource.data.paymentStatus
-        && request.resource.data.allowedStages == resource.data.allowedStages
-        && request.resource.data.allowedSubjects == resource.data.allowedSubjects
-        && request.resource.data.features == resource.data.features
-        && request.resource.data.institution == resource.data.institution
-        && request.resource.data.notes == resource.data.notes
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["paymentRequested", "paymentRequestedAt"])
-      );
-
-      allow delete: if isAdmin();
+    match /professores/{uid} {
+      allow read: if isAdmin() || isOwner(uid);
+      allow create, update: if isAdmin() || isOwner(uid);
+      allow delete: if isAdmin() || isOwner(uid);
     }
 
     match /planos/{planId} {
-      allow read: if isAdmin() || (
-        request.auth != null && resource.data.uid == request.auth.uid
-      );
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow read, update, delete: if signedIn() &&
+        (resource.data.uid == request.auth.uid || isAdmin());
+    }
 
-      // Admin pode criar; professora só pode criar se o próprio administrador
-      // tiver liberado o recurso e o acesso estiver aprovado.
-      allow create: if isAdmin() || (
-        request.auth != null
-        && request.resource.data.uid == request.auth.uid
-        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.accessStatus == "approved"
-        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.features.criarPlano == true
-      );
+    match /configuracoes/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
 
-      allow update, delete: if isAdmin() || (
-        request.auth != null && resource.data.uid == request.auth.uid
-        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.accessStatus == "approved"
-      );
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
