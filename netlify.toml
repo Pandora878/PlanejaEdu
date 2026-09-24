@@ -4,3 +4,8 @@
 
 [functions]
   node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/gerar-ia"
+  to = "/.netlify/functions/gerar-ia"
+  status = 200

@@ -1,0 +1,8 @@
+{
+  "name": "planejaedu-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PlanejaEdu — plataforma pedagógica com IA",
+  "scripts": {"dev":"netlify dev"},
+  "dependencies": {}
+}
