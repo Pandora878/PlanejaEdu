@@ -48,3 +48,17 @@ service cloud.firestore {
 }
 
 > Antes de publicar, valide as regras no Firebase Rules Playground. O sistema não inclui credenciais reais do seu projeto.
+
+
+## Cabeçalhos — versão fiel aos arquivos enviados
+Os PNGs usados na prévia e na impressão foram gerados diretamente da página dos DOCX enviados, preservando o layout visual do cabeçalho em vez de recriar o texto por HTML.
+Os DOCX originais também ficam em `assets/fonte-cabecalho-*.docx`.
+
+
+## Firebase configurado
+O projeto já está configurado para o Firebase `planejaeducaaaa`.
+No Firebase, ative:
+- Authentication > Email/Password
+- Firestore Database
+
+Depois, publique o projeto em um servidor HTTPS.

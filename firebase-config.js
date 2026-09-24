@@ -1,10 +1,10 @@
-// COLOQUE AQUI AS CREDENCIAIS DO SEU PROJETO FIREBASE.
-// Firebase Console > Configurações do projeto > Seus apps > SDK da Web.
+// Configuração Firebase do PlanejaEdu
 export const firebaseConfig = {
-  apiKey: "COLOQUE_SUA_API_KEY",
-  authDomain: "SEU_PROJETO.firebaseapp.com",
-  projectId: "SEU_PROJETO",
-  storageBucket: "SEU_PROJETO.firebasestorage.app",
-  messagingSenderId: "SEU_SENDER_ID",
-  appId: "SEU_APP_ID"
+  apiKey: "AIzaSyCAoPpo30vk_aWjLRJPm1D55U10r25hr00",
+  authDomain: "planejaeducaaaa.firebaseapp.com",
+  projectId: "planejaeducaaaa",
+  storageBucket: "planejaeducaaaa.firebasestorage.app",
+  messagingSenderId: "619532705806",
+  appId: "1:619532705806:web:dcb28fc66b8675298e1c5f",
+  measurementId: "G-FJFKHN7W8J"
 };
