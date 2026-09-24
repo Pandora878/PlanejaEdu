@@ -125,6 +125,20 @@
   <section id="dashboardView" class="dashboard hidden">
     <div class="welcome"><div><span class="eyebrow">MEU ESPAÇO</span><h1>Olá, <span id="welcomeName">professora</span> 👋</h1><p>Organize sua rotina e encontre seus planos em poucos cliques.</p></div><button class="btn btn-primary" data-go="#novo-plano">+ Novo plano de aula</button></div>
     <div class="stats"><article><span class="stat-icon purple">▣</span><div><strong id="totalPlans">0</strong><small>Planos criados</small></div></article><article><span class="stat-icon blue">◫</span><div><strong id="monthPlans">0</strong><small>Neste mês</small></div></article><article><span class="stat-icon green">✓</span><div><strong>Firebase</strong><small>Conta sincronizada</small></div></article></div>
+    <div class="teacher-panel-head"><div><span class="eyebrow">PAINEL DA PROFESSORA</span><h2>Central da sua rotina</h2><p class="muted">Tudo o que você precisa para planejar, registrar e acompanhar suas aulas.</p></div><span class="panel-live">● Sincronizado</span></div>
+    <div class="teacher-tools" id="teacherTools">
+      <button class="tool-card tool-primary" data-panel="agenda"><span class="tool-icon">🗓️</span><span><b>Minha agenda</b><small>Organize tarefas, provas e compromissos.</small></span><i>→</i></button>
+      <button class="tool-card" data-panel="turmas"><span class="tool-icon">👩‍🏫</span><span><b>Turmas e alunos</b><small>Veja suas turmas e acompanhe os alunos.</small></span><i>→</i></button>
+      <button class="tool-card" data-panel="diario"><span class="tool-icon">📖</span><span><b>Diário de aula</b><small>Registre conteúdo, frequência e observações.</small></span><i>→</i></button>
+      <button class="tool-card" data-panel="frequencia"><span class="tool-icon">✅</span><span><b>Frequência</b><small>Faça a chamada e acompanhe presenças.</small></span><i>→</i></button>
+      <button class="tool-card" data-panel="avaliacoes"><span class="tool-icon">📊</span><span><b>Avaliações e notas</b><small>Organize avaliações e resultados.</small></span><i>→</i></button>
+      <button class="tool-card" data-panel="materiais"><span class="tool-icon">📚</span><span><b>Materiais</b><small>Guarde atividades, links e recursos.</small></span><i>→</i></button>
+      <button class="tool-card" data-panel="calendario"><span class="tool-icon">📅</span><span><b>Calendário escolar</b><small>Eventos, reuniões, provas e datas.</small></span><i>→</i></button>
+      <button class="tool-card" data-panel="bncc"><span class="tool-icon">🎯</span><span><b>BNCC e objetivos</b><small>Organize habilidades para seus planos.</small></span><i>→</i></button>
+      <button class="tool-card" data-panel="ocorrencias"><span class="tool-icon">📝</span><span><b>Ocorrências</b><small>Registre situações pedagógicas importantes.</small></span><i>→</i></button>
+      <button class="tool-card" data-panel="relatorios"><span class="tool-icon">📈</span><span><b>Relatórios</b><small>Tenha uma visão da sua rotina pedagógica.</small></span><i>→</i></button>
+    </div>
+    <div id="teacherPanelArea" class="teacher-panel-area hidden"></div>
     <div class="section-head" id="meus-planos"><div><span class="eyebrow">BIBLIOTECA</span><h2>Meus planos de aula</h2></div><input id="searchPlans" class="search" placeholder="🔎  Buscar por título, turma ou disciplina"></div>
     <div id="plansGrid" class="plans-grid"></div>
   </section>

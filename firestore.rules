@@ -51,6 +51,17 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Dados pessoais do painel da professora. Cada registro pertence ao UID que o criou.
+    match /agenda/{id} { allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow read, update, delete: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin()); }
+    match /frequencias/{id} { allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow read, update, delete: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin()); }
+    match /ocorrencias/{id} { allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow read, update, delete: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin()); }
+    match /alunos/{id} { allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow read, update, delete: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin()); }
+    match /diario/{id} { allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow read, update, delete: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin()); }
+    match /avaliacoes/{id} { allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow read, update, delete: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin()); }
+    match /materiais/{id} { allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow read, update, delete: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin()); }
+    match /eventos/{id} { allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow read, update, delete: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin()); }
+    match /bncc/{id} { allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow read, update, delete: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin()); }
+
     match /{document=**} {
       allow read, write: if false;
     }
