@@ -77,46 +77,6 @@
     </div>
   </div>
 
-
-  <div id="paymentScreen" class="payment-screen hidden">
-    <div class="payment-card">
-      <div class="payment-brand">
-        <div class="brand-mark small">📚</div>
-        <div><strong>PlanejaEdu</strong><span>Acesso à plataforma</span></div>
-      </div>
-
-      <div class="payment-step">
-        <span>01</span><div><b>Ative seu acesso</b><small>Pagamento único de R$ 10,00</small></div>
-      </div>
-
-      <div class="pix-box">
-        <div class="pix-title">
-          <span class="pix-icon">PIX</span>
-          <div><b>Libere seu acesso</b><small>Escaneie o QR Code abaixo</small></div>
-        </div>
-        <img src="assets/pix-10-reais.png" class="pix-image" alt="QR Code para pagamento de R$ 10,00">
-        <div class="payment-value"><span>Valor do acesso</span><strong>R$ 10,00</strong></div>
-      </div>
-
-      <div class="payment-instructions">
-        <div><span>1</span> Faça o PIX de <b>R$ 10,00</b>.</div>
-        <div><span>2</span> Tire um print ou guarde o comprovante.</div>
-        <div><span>3</span> Clique abaixo e envie seu pedido pelo WhatsApp.</div>
-      </div>
-
-      <a id="whatsappRequestBtn" class="whatsapp-btn" href="#" target="_blank" rel="noopener">
-        <span>◉</span> Enviar pedido pelo WhatsApp
-      </a>
-      <button id="paymentRefreshBtn" class="secondary full" type="button">Já enviei o pedido — verificar acesso</button>
-      <button id="paymentLogoutBtn" class="link-btn" type="button">Sair da conta</button>
-
-      <div id="paymentStatus" class="payment-status pending">
-        <b>⏳ Aguardando liberação</b>
-        <span>Após enviar o comprovante, o administrador irá analisar e liberar sua conta.</span>
-      </div>
-    </div>
-  </div>
-
   <div id="app" class="app hidden">
     <aside class="sidebar">
       <div class="brand">
@@ -295,17 +255,6 @@
             <p>Defina exatamente quais etapas, disciplinas e recursos cada conta poderá utilizar.</p>
           </div>
           <div class="admin-hero-icon">⚙</div>
-        </div>
-
-        <div class="admin-payment-card admin-card">
-          <div class="admin-card-head">
-            <div><span class="card-kicker">ACESSOS</span><h3>Pedidos de acesso e pagamentos</h3></div>
-            <button id="refreshAccessBtn" class="secondary">Atualizar</button>
-          </div>
-          <p class="admin-help">Aprove professoras que pagaram ou libere contas gratuitamente quando desejar.</p>
-          <div id="accessRequestList" class="access-list">
-            <div class="empty-admin">Carregando pedidos...</div>
-          </div>
         </div>
 
         <div class="admin-grid">

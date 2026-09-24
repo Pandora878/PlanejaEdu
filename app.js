@@ -22,9 +22,6 @@ const firebaseReady = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("
 // Para produção, troque este e-mail pelo seu e-mail administrativo.
 // A segurança definitiva deve ser reforçada também nas regras do Firestore.
 const ADMIN_EMAILS = ["admin@planejaedu.com"];
-// Informe aqui o WhatsApp que receberá os pedidos de acesso.
-// Use somente números, com código do país e DDD. Ex.: 5549999999999
-const WHATSAPP_NUMBER = "SEU_NUMERO_WHATSAPP";
 const STAGES = ["Educação Infantil","Pré I","Pré II","1º ano","2º ano","3º ano","4º ano","5º ano"];
 const SUBJECTS = ["Português","Matemática","Ciências","História","Geografia","Ensino Religioso","Arte","Educação Física","Projetos interdisciplinares"];
 const FEATURES = [
@@ -52,6 +49,8 @@ function showToast(msg){
 
 async function openApp(userName="Professor(a)"){
   $("loginScreen").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  $("welcomeText").textContent = `Olá, ${userName}`;
   $("sideUserName").textContent = userName;
   $("sideAvatar").textContent = (userName || "P").trim().charAt(0).toUpperCase();
 
@@ -62,18 +61,9 @@ async function openApp(userName="Professor(a)"){
       uid:"demo", name:userName, role:"admin",
       allowedStages:[...STAGES], allowedSubjects:[...SUBJECTS],
       features:Object.fromEntries(FEATURES.map(x=>[x[0],true])),
-      institution:"escola", accessStatus:"approved", paymentStatus:"exempt"
+      institution:"escola"
     };
   }
-
-  if(!isAdmin() && currentProfile.accessStatus !== "approved"){
-    showPaymentScreen();
-    return;
-  }
-
-  $("paymentScreen").classList.add("hidden");
-  $("app").classList.remove("hidden");
-  $("welcomeText").textContent = `Olá, ${userName}`;
   applyPermissions();
   refreshPlans();
 }
@@ -85,114 +75,6 @@ if (firebaseReady) {
 }
 
 
-
-function getWhatsAppUrl(){
-  const number = WHATSAPP_NUMBER.replace(/\D/g,"");
-  if(!number || number.length < 10) return null;
-  const name = currentProfile?.name || auth?.currentUser?.email || "Professora";
-  const msg = `Olá! Criei minha conta no PlanejaEdu e quero solicitar a liberação do acesso. Nome: ${name}. Estou enviando o comprovante do PIX de R$ 10,00.`;
-  return `https://wa.me/${number}?text=${encodeURIComponent(msg)}`;
-}
-function showPaymentScreen(){
-  $("app").classList.add("hidden");
-  $("paymentScreen").classList.remove("hidden");
-  const url=getWhatsAppUrl();
-  const btn=$("whatsappRequestBtn");
-  if(url){
-    btn.href=url;
-    btn.classList.remove("disabled");
-  }else{
-    btn.href="#";
-    btn.classList.add("disabled");
-    btn.onclick=(e)=>{e.preventDefault();showToast("O WhatsApp do administrador ainda não foi configurado.");};
-  }
-  const status=$("paymentStatus");
-  const exempt=currentProfile?.paymentStatus==="exempt";
-  const requested=currentProfile?.paymentRequested===true;
-  if(exempt){
-    status.className="payment-status approved";
-    status.innerHTML="<b>✓ Acesso liberado pelo administrador</b><span>Você não precisa realizar o pagamento. Clique em verificar acesso.</span>";
-  }else if(currentProfile?.accessStatus==="approved"){
-    status.className="payment-status approved";
-    status.innerHTML="<b>✓ Acesso liberado</b><span>Sua conta já está autorizada a entrar na plataforma.</span>";
-  }else if(requested){
-    status.className="payment-status requested";
-    status.innerHTML="<b>📩 Pedido enviado</b><span>Seu pedido está aguardando a análise do administrador.</span>";
-  }else{
-    status.className="payment-status pending";
-    status.innerHTML="<b>⏳ Aguardando liberação</b><span>Faça o PIX e envie o pedido pelo WhatsApp para solicitar a liberação.</span>";
-  }
-}
-$("whatsappRequestBtn")?.addEventListener("click", async e=>{
-  if($("whatsappRequestBtn").classList.contains("disabled")) return;
-  if(firebaseReady && auth.currentUser){
-    try{
-      await updateDoc(doc(db,"usuarios",auth.currentUser.uid),{
-        paymentRequested:true, paymentRequestedAt:serverTimestamp()
-      });
-      currentProfile.paymentRequested=true;
-      showPaymentScreen();
-    }catch(err){ console.warn(err); }
-  }
-});
-$("paymentRefreshBtn")?.addEventListener("click", async ()=>{
-  if(firebaseReady && auth.currentUser){
-    currentProfile=await loadMyProfile(auth.currentUser);
-    if(currentProfile.accessStatus==="approved" || isAdmin()){
-      showToast("Acesso liberado!");
-      openApp(currentProfile.name||auth.currentUser.email?.split("@")[0]||"Professor(a)");
-    }else{
-      showPaymentScreen();
-      showToast("Ainda aguardando a liberação do administrador.");
-    }
-  }
-});
-$("paymentLogoutBtn")?.addEventListener("click", async ()=>{
-  if(firebaseReady && auth.currentUser) await signOut(auth);
-  $("paymentScreen").classList.add("hidden");
-  $("loginScreen").classList.remove("hidden");
-});
-
-async function loadAccessRequests(){
-  if(!isAdmin() || !firebaseReady) return;
-  const snap=await getDocs(collection(db,"usuarios"));
-  const list=snap.docs.map(d=>({uid:d.id,...d.data()}))
-    .filter(p=>p.role!=="admin" && (p.paymentRequested || p.accessStatus==="pending" || p.paymentStatus==="exempt"));
-  const box=$("accessRequestList");
-  if(!list.length){
-    box.innerHTML='<div class="empty-admin">Nenhum pedido pendente.</div>'; return;
-  }
-  box.innerHTML=list.map(p=>{
-    const state=p.accessStatus==="approved" ? "Aprovado" : p.paymentStatus==="exempt" ? "Cortesia" : "Pendente";
-    return `<div class="access-row">
-      <div class="access-person"><span class="teacher-avatar">${esc((p.name||p.email||"P").charAt(0).toUpperCase())}</span>
-        <div><strong>${esc(p.name||"Sem nome")}</strong><small>${esc(p.email||"")}</small></div>
-      </div>
-      <span class="access-state ${state==="Aprovado"?"ok":state==="Cortesia"?"gift":"wait"}">${state}</span>
-      <div class="access-actions">
-        <button class="mini-action approve" data-access-action="approve" data-uid="${esc(p.uid)}">Liberar</button>
-        <button class="mini-action gift" data-access-action="gift" data-uid="${esc(p.uid)}">Cortesia</button>
-        <button class="mini-action block" data-access-action="block" data-uid="${esc(p.uid)}">Bloquear</button>
-      </div>
-    </div>`;
-  }).join("");
-  box.querySelectorAll("[data-access-action]").forEach(b=>b.onclick=()=>handleAccessAction(b.dataset.uid,b.dataset.accessAction));
-}
-async function handleAccessAction(uid,action){
-  if(!isAdmin()) return;
-  const ref=doc(db,"usuarios",uid);
-  const data = action==="approve"
-    ? {accessStatus:"approved",paymentStatus:"paid",approvedAt:serverTimestamp()}
-    : action==="gift"
-      ? {accessStatus:"approved",paymentStatus:"exempt",approvedAt:serverTimestamp()}
-      : {accessStatus:"pending",paymentStatus:"pending",approvedAt:null};
-  try{
-    await updateDoc(ref,data);
-    await loadAccessRequests();
-    showToast(action==="approve"?"Acesso liberado.":action==="gift"?"Cortesia liberada.":"Acesso bloqueado.");
-  }catch(err){showToast("Erro: "+err.message);}
-}
-
 async function loadMyProfile(user){
   try{
     const snap = await getDoc(doc(db,"usuarios",user.uid));
@@ -201,8 +83,7 @@ async function loadMyProfile(user){
   return {
     uid:user.uid,name:user.displayName||user.email?.split("@")[0]||"Professor(a)",
     email:user.email,role:ADMIN_EMAILS.includes((user.email||"").toLowerCase())?"admin":"teacher",
-    allowedStages:[],allowedSubjects:[],features:{},
-    accessStatus:"pending",paymentStatus:"pending",paymentRequested:false
+    allowedStages:[],allowedSubjects:[],features:{}
   };
 }
 function isAdmin(){
@@ -288,7 +169,6 @@ function selectTeacher(uid){
   buildChecks("featureChecks",FEATURES,p.features||{},"feature");
 }
 $("refreshTeachersBtn")?.addEventListener("click",loadTeacherProfiles);
-$("refreshAccessBtn")?.addEventListener("click",loadAccessRequests);
 $("teacherAccessForm")?.addEventListener("submit",async e=>{
   e.preventDefault();
   if(!isAdmin()){showToast("Acesso administrativo não autorizado.");return;}
@@ -365,9 +245,6 @@ $("signupForm").addEventListener("submit", async e=>{
       allowedStages: [],
       allowedSubjects: [],
       features: {criarPlano:false,bncc:false,planejamento:false,pdf:false,modelos:false},
-      accessStatus: "pending",
-      paymentStatus: "pending",
-      paymentRequested: false,
       notes: "",
       createdAt: serverTimestamp()
     };
@@ -411,7 +288,7 @@ function goPage(page){
   $("pageTitle").textContent=titles[page]||"PlanejaEdu";
   if(page==="planos") renderPlans();
   if(page==="calendario") renderCalendar();
-  if(page==="admin"){ loadTeacherProfiles(); loadAccessRequests(); }
+  if(page==="admin") loadTeacherProfiles();
 }
 
 $("instituicao").addEventListener("change", updateHeaderPreview);

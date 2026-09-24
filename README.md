@@ -93,22 +93,3 @@ A lista administrativa usa a coleção `usuarios` do Firestore.
 ### Conta administradora
 Defina o seu e-mail em `ADMIN_EMAILS` no `app.js` e use o mesmo e-mail nas regras do Firestore (`admin@planejaedu.com` no exemplo).
 Para produção, recomenda-se usar Firebase Custom Claims para uma autorização administrativa mais forte.
-
-
-## Pagamento de acesso
-Depois de criar a conta, a professora não entra imediatamente no conteúdo.
-Ela vê uma tela de ativação com o QR Code fornecido para pagamento de R$ 10,00 e um botão para enviar o pedido pelo WhatsApp.
-
-O administrador pode, na área Admin:
-- Liberar acesso após confirmação do pagamento (`Liberar`)
-- Liberar gratuitamente (`Cortesia`), sem pagamento
-- Bloquear/retirar a liberação (`Bloquear`)
-- Atualizar a lista de pedidos
-
-### Configurar WhatsApp
-No `app.js`, altere:
-`const WHATSAPP_NUMBER = "SEU_NUMERO_WHATSAPP";`
-para o número comercial que receberá os pedidos, usando somente números e incluindo o código do Brasil (55).
-
-O QR Code foi incluído como `assets/pix-10-reais.png`, usando a imagem fornecida.
-A plataforma não confirma pagamento automaticamente: a liberação é feita pelo administrador, o que evita conceder acesso apenas por abrir ou escanear o QR Code.
