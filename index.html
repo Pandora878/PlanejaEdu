@@ -1,18 +1,125 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="PlanejaEdu — planejamento escolar com inteligência artificial." />
-  <title>PlanejaEdu — IA para professores</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PlanejaEdu — Planejamento escolar gratuito</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/lucide-static@0.468.0/font/lucide.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="app"></div>
+<div id="app">
+  <section id="landing" class="screen landing">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"><i class="icon icon-layers-3"></i></span><b>Planeja<span>Edu</span></b></div>
+      <button class="ghost" data-action="login">Entrar</button>
+    </header>
+    <main class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">PLANEJAMENTO ESCOLAR INTELIGENTE</div>
+        <h1>Seu planejamento.<br><span>Mais organizado.</span></h1>
+        <p>Crie aulas, atividades, avaliações e materiais pedagógicos gratuitamente, com ferramentas feitas para a rotina de professores.</p>
+        <div class="hero-actions">
+          <button class="primary big" data-action="start">Começar <i class="icon icon-arrow-right"></i></button>
+        </div>
+        <div class="trust"><span>P</span><span>A</span><span>J</span><span>M</span> Feito para professoras, professores e escolas</div>
+      </div>
+      <div class="ai-preview">
+        <div class="window">
+          <div class="window-head"><i></i><i></i><i></i><b>PlanejaEdu IA</b></div>
+          <div class="window-body">
+            <b>O que você quer preparar hoje?</b>
+            <div class="fake-input">Crie uma aula sobre o ciclo da água para o 4º ano, com atividade prática e avaliação.</div>
+            <div class="result"><b><i class="icon icon-sparkles"></i> Aula completa gerada</b><small>Objetivos • Introdução • Desenvolvimento • Atividade • Avaliação</small></div>
+            <button class="primary full" data-action="start">Experimentar</button>
+          </div>
+        </div>
+      </div>
+    </main>
+    <section class="tools-grid">
+      <article class="tool"><i class="icon icon-sparkles"></i><h3>Plano de aula</h3><p>Crie um planejamento completo, com objetivos, etapas e avaliação.</p></article>
+      <article class="tool"><i class="icon icon-presentation"></i><h3>Slides</h3><p>Monte uma apresentação estruturada para sua aula.</p></article>
+      <article class="tool"><i class="icon icon-file-check-2"></i><h3>Prova e avaliação</h3><p>Gere questões, gabarito e critérios de correção.</p></article>
+      <article class="tool"><i class="icon icon-list-checks"></i><h3>Lista de exercícios</h3><p>Crie atividades por série e nível de dificuldade.</p></article>
+      <article class="tool"><i class="icon icon-brain"></i><h3>Mapa mental</h3><p>Organize o conteúdo de forma visual.</p></article>
+      <article class="tool"><i class="icon icon-gamepad-2"></i><h3>Jogos educativos</h3><p>Transforme o tema em uma atividade lúdica.</p></article>
+      <article class="tool"><i class="icon icon-notebook-pen"></i><h3>Projeto</h3><p>Estruture projetos interdisciplinares.</p></article>
+      <article class="tool"><i class="icon icon-accessibility"></i><h3>Adaptação</h3><p>Adapte materiais para diferentes necessidades.</p></article>
+      <article class="tool"><i class="icon icon-message-circle"></i><h3>Comunicação</h3><p>Crie mensagens para famílias e comunidade escolar.</p></article>
+      <article class="tool"><i class="icon icon-lightbulb"></i><h3>Ideias de atividades</h3><p>Receba sugestões práticas para a turma.</p></article>
+      <article class="tool"><i class="icon icon-file-text"></i><h3>Resumo</h3><p>Resuma conteúdos para revisão.</p></article>
+      <article class="tool"><i class="icon icon-bot"></i><h3>Assistente IA</h3><p>Converse com o assistente pedagógico local.</p></article>
+    </section>
+  </section>
+
+  <section id="login" class="auth screen hidden">
+    <div class="auth-card">
+      <div class="brand"><span class="brand-mark"><i class="icon icon-layers-3"></i></span><b>Planeja<span>Edu</span></b></div>
+      <div class="eyebrow">PLANEJAMENTO ESCOLAR</div>
+      <h1>Bem-vinda!</h1><p>Entre para acessar seu espaço pedagógico.</p>
+      <label>E-mail<input id="email" type="email" placeholder="seuemail@exemplo.com"></label>
+      <label>Senha<input id="password" type="password" placeholder="••••••••"></label>
+      <button class="primary full" data-action="do-login">Entrar na plataforma <i class="icon icon-arrow-right"></i></button>
+      <button class="google full" data-action="google"><i class="icon icon-chrome"></i> Continuar com Google</button>
+      <button class="link-btn" data-action="signup">Criar uma conta gratuita</button>
+      <button class="demo full" data-action="demo">Entrar em modo demonstração</button>
+      <small>Sem planos pagos. O projeto é gratuito.</small>
+    </div>
+  </section>
+
+  <section id="signup" class="auth screen hidden">
+    <div class="auth-card">
+      <button class="back" data-action="login"><i class="icon icon-arrow-left"></i> Voltar</button>
+      <div class="brand"><span class="brand-mark"><i class="icon icon-layers-3"></i></span><b>Planeja<span>Edu</span></b></div>
+      <div class="eyebrow">NOVA CONTA</div><h1>Criar conta</h1>
+      <p>Seu acesso é gratuito.</p>
+      <label>Nome completo<input id="signup-name" placeholder="Seu nome"></label>
+      <label>E-mail<input id="signup-email" type="email" placeholder="seuemail@exemplo.com"></label>
+      <label>Senha<input id="signup-password" type="password" placeholder="Crie uma senha"></label>
+      <button class="primary full" data-action="create-account">Criar conta</button>
+      <small id="signup-msg"></small>
+    </div>
+  </section>
+
+  <section id="app-screen" class="dashboard screen hidden">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark"><i class="icon icon-layers-3"></i></span><b>Planeja<span>Edu</span></b></div>
+      <div class="user-mini"><div id="avatar">P</div><div><b id="user-name">Professora</b><small>Área da professora</small></div></div>
+      <nav>
+        <button class="nav active" data-page="home"><i class="icon icon-layout-dashboard"></i> Visão geral</button>
+        <button class="nav" data-page="planner"><i class="icon icon-sparkles"></i> Criar material</button>
+        <button class="nav" data-page="classes"><i class="icon icon-users"></i> Turmas</button>
+        <button class="nav" data-page="students"><i class="icon icon-user-round"></i> Alunos</button>
+        <button class="nav" data-page="attendance"><i class="icon icon-clipboard-check"></i> Chamada</button>
+        <button class="nav" data-page="calendar"><i class="icon icon-calendar-days"></i> Calendário</button>
+        <button class="nav" data-page="headers"><i class="icon icon-panels-top-left"></i> Cabeçalhos</button>
+        <button class="nav" data-page="library"><i class="icon icon-folder-open"></i> Biblioteca</button>
+        <button class="nav" data-page="settings"><i class="icon icon-settings"></i> Configurações</button>
+      </nav>
+      <button class="logout" data-action="logout"><i class="icon icon-log-out"></i> Sair</button>
+    </aside>
+    <main class="main">
+      <div class="mobile-head"><button data-action="menu"><i class="icon icon-menu"></i></button><div class="brand"><b>Planeja<span>Edu</span></b></div></div>
+      <div id="page"></div>
+    </main>
+  </section>
+</div>
+
+<div id="pix-modal" class="modal hidden">
+  <div class="modal-card contribution">
+    <button class="close" data-action="close-pix"><i class="icon icon-x"></i></button>
+    <div class="contrib-icon"><i class="icon icon-heart-handshake"></i></div>
+    <div class="eyebrow">PROJETO GRATUITO</div>
+    <h2>Quer contribuir?</h2>
+    <p>O PlanejaEdu é gratuito e não possui plano pago. Se quiser contribuir com a professora criadora do projeto, qualquer valor é bem-vindo.</p>
+    <div class="pix-box"><small>Chave Pix</small><b id="pix-key">49 99967-4823</b><button data-action="copy-pix"><i class="icon icon-copy"></i> Copiar</button></div>
+    <button class="primary full" data-action="close-pix">Continuar gratuitamente</button>
+  </div>
+</div>
+<div id="toast"></div>
 <script src="app.js"></script>
 </body>
 </html>

@@ -1,30 +1,37 @@
-# PlanejaEdu — versão 100% gratuita
+# PlanejaEdu — versão gratuita
 
-Esta versão do PlanejaEdu não possui planos pagos, assinatura ou pagamento obrigatório.
+Esta versão é um protótipo funcional estático e **não possui planos pagos nem depende de créditos da OpenAI**.
 
-## Assistente pedagógico gratuito
-O botão “Criar com IA” usa um assistente pedagógico local baseado em modelos e estruturas de planejamento. Ele funciona no navegador e não depende de:
-- OpenAI;
-- cartão de crédito;
-- créditos de API;
-- OPENAI_API_KEY;
-- Netlify Functions para geração.
+## Incluído
+- Tela inicial com botão **Começar**.
+- Antes do login, aparece a opção de contribuição voluntária por Pix.
+- Login, criação de conta, Google (modo de demonstração visual) e modo demonstração.
+- Dashboard de professora.
+- Criador local de plano de aula e outros materiais.
+- Cabeçalhos institucionais selecionáveis, incluindo:
+  - Escola Municipal Professora Irmã Blandina Cisz
+  - Escola Estadual
+  - Escola Particular
+  - Irmã Blandina
+  - Integral (Lajeado Grande)
+- Turmas com segmento e turno.
+- Cadastro de alunos.
+- Chamada automática baseada nos alunos cadastrados.
+- Calendário.
+- Biblioteca local de materiais.
+- Configurações de perfil e modo escuro.
+- Ícones Lucide via CDN.
+- Persistência no navegador com localStorage.
 
-Por isso, você pode publicar o site no Netlify sem configurar nenhuma chave de API.
+## Importante sobre a IA
+Para manter o projeto totalmente gratuito, o gerador desta versão funciona localmente e não chama a API da OpenAI. Portanto, não precisa de OPENAI_API_KEY e não haverá erro de créditos da OpenAI.
 
-> Importante: este assistente gratuito não é um modelo generativo externo como ChatGPT. Ele monta sugestões pedagógicas a partir do que a professora informa. Isso evita custos de API.
+## Como publicar no Netlify
+Envie a pasta/ZIP para o Netlify. Não configure OPENAI_API_KEY para esta versão.
 
-## Contribuição voluntária
-O PlanejaEdu é gratuito. A contribuição é opcional e não libera recursos extras.
+## WhatsApp para lista de alunos
+A versão de base permite cadastrar os alunos diretamente. O botão de envio por WhatsApp pode ser conectado ao número da professora quando você quiser adicionar essa etapa.
 
-Mensagem sugerida:
-“Se quiser contribuir com a professora criadora do projeto com qualquer valor, sua ajuda será muito bem-vinda.”
-
-PIX:
-(49) 99967-4823
-
-## Publicação
-Envie a pasta `planejaedu-ai` para o Netlify. Não é necessário configurar `OPENAI_API_KEY`.
-
-## Observação
-O login, cadastro, foto e preferências desta versão usam armazenamento local para protótipo. Para produção, conecte Firebase Authentication/Firestore.
+## Pix
+Chave exibida no projeto: 49 99967-4823.
+O pagamento é voluntário e o site continua gratuito sem contribuição.
