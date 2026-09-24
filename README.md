@@ -135,3 +135,22 @@ A tela de pagamento exibe exatamente: **“Uma ajuda significativa para apoiar o
 A conta demo é apenas para demonstração e não pode salvar planos como registros reais.
 A plataforma exibe a marca d'água "PlanejaEdu • Material protegido".
 O WhatsApp de atendimento/pedidos está configurado para (49) 99967-4823.
+
+
+## Visual profissional dos planos
+O formulário e a visualização do plano foram reorganizados para uma apresentação vertical, sem colunas laterais, com seções, títulos, campos largos e layout adequado para impressão/PDF.
+
+
+## Botão Área ADMIN
+A tela inicial possui um botão "Área ADMIN" acima das abas de login.
+Ao ativá-lo, o login entra em modo administrativo e o sistema só permite a entrada se a conta autenticada tiver `/admin/{UID}` com `role: "admin"`.
+Uma conta de professora, mesmo com a senha correta, não consegue acessar o painel administrativo por esse botão.
+
+
+## Botão de acesso administrativo
+A tela inicial agora possui o botão "Acesso administrativo" acima das abas Entrar/Criar conta.
+O botão apenas ativa o modo de login administrativo; ele não concede privilégios.
+A conta só é aceita como Admin quando o UID autenticado possui o documento `/admin/{UID}` com `role: "admin"` no Firestore.
+
+
+Botão ADMIN corrigido: aparece de forma destacada no topo do cartão de login, imediatamente acima de Entrar/Criar conta.

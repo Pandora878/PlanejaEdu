@@ -32,6 +32,18 @@
       </div>
 
       <div class="login-card">
+        <button id="adminAccessBtn" class="admin-access-btn" type="button" aria-label="Acesso administrativo">
+          <span class="admin-icon">⚙</span>
+          <span class="admin-copy">
+            <strong>ÁREA ADMIN</strong>
+            <small>Acesso exclusivo do administrador</small>
+          </span>
+          <span class="admin-arrow">→</span>
+        </button>
+        <div id="adminLoginNotice" class="admin-login-notice hidden">
+          <strong>🔐 Login administrativo ativado</strong>
+          <span>Use a conta cadastrada no Firebase em <code>/admin/{UID}</code>.</span>
+        </div>
         <div class="auth-tabs">
           <button id="tabLogin" class="auth-tab active" type="button">Entrar</button>
           <button id="tabSignup" class="auth-tab" type="button">Criar conta</button>

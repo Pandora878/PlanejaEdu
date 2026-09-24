@@ -52,32 +52,55 @@ function showToast(msg){
   setTimeout(()=>$("toast").classList.remove("show"),2400);
 }
 
+function showLoginError(msg){
+  const box=$("loginError");
+  if(box){ box.textContent=msg; box.classList.remove("hidden"); }
+  showToast(msg);
+}
+function clearLoginError(){
+  const box=$("loginError");
+  if(box){ box.textContent=""; box.classList.add("hidden"); }
+}
+
 async function openApp(userName="Professor(a)"){
-  $("loginScreen").classList.add("hidden");
-  $("sideUserName").textContent = userName;
-  $("sideAvatar").textContent = (userName || "P").trim().charAt(0).toUpperCase();
+  // Nunca esconda o login antes de terminar a validação do perfil.
+  clearLoginError();
+  try {
+    if(firebaseReady && auth.currentUser){
+      currentProfile = await loadMyProfile(auth.currentUser);
+    } else {
+      currentProfile = {
+        uid:"demo", name:userName, role:"demo", demo:true,
+        allowedStages:[...STAGES], allowedSubjects:[...SUBJECTS],
+        features:Object.fromEntries(FEATURES.map(x=>[x[0],true])),
+        institution:"escola", accessStatus:"approved", paymentStatus:"exempt"
+      };
+    }
 
-  if(firebaseReady && auth.currentUser){
-    currentProfile = await loadMyProfile(auth.currentUser);
-  } else {
-    currentProfile = {
-      uid:"demo", name:userName, role:"demo", demo:true,
-      allowedStages:[...STAGES], allowedSubjects:[...SUBJECTS],
-      features:Object.fromEntries(FEATURES.map(x=>[x[0],true])),
-      institution:"escola", accessStatus:"approved", paymentStatus:"exempt"
-    };
+    if(currentProfile.profileError){
+      showLoginError(currentProfile.profileError);
+      return;
+    }
+
+    $("loginScreen").classList.add("hidden");
+    $("sideUserName").textContent = userName;
+    $("sideAvatar").textContent = (userName || "P").trim().charAt(0).toUpperCase();
+
+    if(!isAdmin() && currentProfile.accessStatus !== "approved"){
+      showPaymentScreen();
+      return;
+    }
+
+    $("paymentScreen").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    $("welcomeText").textContent = `Olá, ${userName}`;
+    applyPermissions();
+    refreshPlans();
+  } catch(err){
+    console.error("Erro ao abrir a plataforma",err);
+    $("loginScreen").classList.remove("hidden");
+    showLoginError(`Login realizado, mas não foi possível carregar seu perfil no Firestore. ${err.message || err}`);
   }
-
-  if(!isAdmin() && currentProfile.accessStatus !== "approved"){
-    showPaymentScreen();
-    return;
-  }
-
-  $("paymentScreen").classList.add("hidden");
-  $("app").classList.remove("hidden");
-  $("welcomeText").textContent = `Olá, ${userName}`;
-  applyPermissions();
-  refreshPlans();
 }
 
 if (firebaseReady) {
@@ -211,44 +234,45 @@ async function loadMyProfile(user){
     email:user.email,
     role:"teacher",
     allowedStages:[],allowedSubjects:[],features:{},
-    accessStatus:"pending",paymentStatus:"pending",paymentRequested:false
+    accessStatus:"pending",paymentStatus:"pending",paymentRequested:false,
+    adminVerified:false
   };
 
-  if(!firebaseReady) return profile;
-
+  // 1) Primeiro e de forma explícita: verifica /admin/{UID}.
+  // Isso usa exatamente o UID do Firebase Authentication.
   try{
-    // Primeiro verifica o documento /admin/{UID}.
-    // Se role === "admin", esta conta entra como administradora.
     const adminSnap = await getDoc(doc(db, ADMIN_COLLECTION, user.uid));
     if(adminSnap.exists() && adminSnap.data()?.role === "admin"){
       profile.role = "admin";
+      profile.adminVerified = true;
       profile.accessStatus = "approved";
       profile.paymentStatus = "exempt";
     }
   }catch(err){
-    console.warn("Não foi possível verificar o perfil de administrador", err);
+    console.error("Falha ao consultar /admin/UID:",err);
+    profile.profileError = `Não foi possível verificar sua autorização no Firebase. Verifique se as regras do Firestore permitem a leitura de /admin/{UID}. Erro: ${err.code || err.message}`;
+    return profile;
   }
 
+  // 2) Conta de professora: carrega somente o próprio documento.
   try{
     const snap = await getDoc(doc(db,"usuarios",user.uid));
-    if(snap.exists()) profile = {...profile, ...snap.data(), uid:user.uid};
-  }catch(err){
-    console.warn("Perfil de professora não carregado",err);
-  }
-
-  // O documento /admin/{UID} tem prioridade sobre role salvo em /usuarios/{UID}.
-  try{
-    const adminSnap = await getDoc(doc(db, ADMIN_COLLECTION, user.uid));
-    if(adminSnap.exists() && adminSnap.data()?.role === "admin"){
-      profile.role = "admin";
-      profile.accessStatus = "approved";
-      profile.paymentStatus = "exempt";
+    if(snap.exists()){
+      profile = {...profile, ...snap.data(), uid:user.uid};
+      // /admin/{UID} sempre vence qualquer role salvo em /usuarios.
+      if(profile.adminVerified){
+        profile.role = "admin";
+        profile.accessStatus = "approved";
+        profile.paymentStatus = "exempt";
+      }
     }
   }catch(err){
-    console.warn("Verificação final de admin falhou",err);
+    console.error("Falha ao carregar /usuarios/UID:",err);
+    profile.profileError = `Seu login foi realizado, mas o perfil não pôde ser carregado no Firestore. Erro: ${err.code || err.message}`;
   }
   return profile;
 }
+
 function isAdmin(){
   return currentProfile?.role === "admin";
 }
@@ -356,16 +380,39 @@ $("teacherAccessForm")?.addEventListener("submit",async e=>{
   }catch(err){showToast("Erro ao salvar: "+err.message);}
 });
 
+
+let adminLoginMode = false;
+
+$("adminAccessBtn")?.addEventListener("click", ()=>{
+  adminLoginMode = !adminLoginMode;
+  $("adminAccessNotice")?.classList.toggle("hidden", !adminLoginMode);
+  $("adminAccessBtn")?.classList.toggle("active", adminLoginMode);
+  $("email")?.focus();
+  if(adminLoginMode){
+    showToast("Login administrativo ativado. Use somente a conta Admin autorizada.");
+  }
+});
+
 $("loginForm").addEventListener("submit", async e=>{
   e.preventDefault();
+  clearLoginError();
   if(!firebaseReady){
-    showToast("Firebase ainda não foi configurado. Use o modo demonstração ou preencha firebase-config.js.");
+    showLoginError("Firebase ainda não foi configurado. Use o modo demonstração ou preencha firebase-config.js.");
     return;
   }
   try {
-    await signInWithEmailAndPassword(auth, $("email").value, $("password").value);
+    // O botão ADMIN é apenas um atalho visual. O login normal continua funcionando.
+    // A autorização real é decidida pelo documento /admin/{UID} depois do login.
+    await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
   } catch(err) {
-    showToast("Não foi possível entrar: " + (err.code || err.message));
+    const messages={
+      "auth/invalid-credential":"E-mail ou senha incorretos.",
+      "auth/user-not-found":"Não encontramos uma conta com este e-mail.",
+      "auth/wrong-password":"Senha incorreta.",
+      "auth/invalid-email":"Digite um e-mail válido.",
+      "auth/too-many-requests":"Muitas tentativas. Aguarde alguns minutos e tente novamente."
+    };
+    showLoginError(messages[err.code] || `Não foi possível entrar: ${err.code || err.message}`);
   }
 });
 
@@ -441,6 +488,9 @@ $("demoBtn").addEventListener("click", ()=>{
 $("logoutBtn").addEventListener("click", async ()=>{
   if(firebaseReady && !demo) await signOut(auth);
   demo=false;
+  adminLoginMode=false;
+  $("adminAccessNotice")?.classList.add("hidden");
+  $("adminAccessBtn")?.classList.remove("active");
   $("app").classList.add("hidden");
   $("loginScreen").classList.remove("hidden");
 });
@@ -698,4 +748,8 @@ updateHeaderPreview(); updateMini();
 $("profileBtn")?.addEventListener("click", ()=>{
   const name = $("sideUserName")?.textContent || "Professor(a)";
   showToast(`Perfil ativo: ${name}`);
+});
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  document.body.classList.add("planejamento-profissional");
 });
