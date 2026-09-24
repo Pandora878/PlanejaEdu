@@ -1,10 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import {
-  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  updateProfile, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp,
-  doc, deleteDoc
+  doc, deleteDoc, getDoc, setDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -17,6 +18,25 @@ const fields = ["instituicao","etapa","turma","disciplina","professor","data","d
 
 let app, auth, db;
 const firebaseReady = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("COLOQUE_");
+// Personalização por conta.
+// Para produção, troque este e-mail pelo seu e-mail administrativo.
+// A segurança definitiva deve ser reforçada também nas regras do Firestore.
+const ADMIN_EMAILS = ["admin@planejaedu.com"];
+// Informe aqui o WhatsApp que receberá os pedidos de acesso.
+// Use somente números, com código do país e DDD. Ex.: 5549999999999
+const WHATSAPP_NUMBER = "SEU_NUMERO_WHATSAPP";
+const STAGES = ["Educação Infantil","Pré I","Pré II","1º ano","2º ano","3º ano","4º ano","5º ano"];
+const SUBJECTS = ["Português","Matemática","Ciências","História","Geografia","Ensino Religioso","Arte","Educação Física","Projetos interdisciplinares"];
+const FEATURES = [
+  ["criarPlano","Criar planos de aula"],
+  ["bncc","Banco de habilidades BNCC"],
+  ["planejamento","Planejamento semanal"],
+  ["pdf","Impressão e PDF"],
+  ["modelos","Modelos rápidos de aula"]
+];
+let currentProfile = null;
+let allTeacherProfiles = [];
+
 
 if (firebaseReady) {
   app = initializeApp(firebaseConfig);
@@ -30,10 +50,31 @@ function showToast(msg){
   setTimeout(()=>$("toast").classList.remove("show"),2400);
 }
 
-function openApp(userName="Professor(a)"){
+async function openApp(userName="Professor(a)"){
   $("loginScreen").classList.add("hidden");
+  $("sideUserName").textContent = userName;
+  $("sideAvatar").textContent = (userName || "P").trim().charAt(0).toUpperCase();
+
+  if(firebaseReady && auth.currentUser){
+    currentProfile = await loadMyProfile(auth.currentUser);
+  } else {
+    currentProfile = {
+      uid:"demo", name:userName, role:"admin",
+      allowedStages:[...STAGES], allowedSubjects:[...SUBJECTS],
+      features:Object.fromEntries(FEATURES.map(x=>[x[0],true])),
+      institution:"escola", accessStatus:"approved", paymentStatus:"exempt"
+    };
+  }
+
+  if(!isAdmin() && currentProfile.accessStatus !== "approved"){
+    showPaymentScreen();
+    return;
+  }
+
+  $("paymentScreen").classList.add("hidden");
   $("app").classList.remove("hidden");
   $("welcomeText").textContent = `Olá, ${userName}`;
+  applyPermissions();
   refreshPlans();
 }
 
@@ -42,6 +83,230 @@ if (firebaseReady) {
     if (user) openApp(user.displayName || user.email?.split("@")[0] || "Professor(a)");
   });
 }
+
+
+
+function getWhatsAppUrl(){
+  const number = WHATSAPP_NUMBER.replace(/\D/g,"");
+  if(!number || number.length < 10) return null;
+  const name = currentProfile?.name || auth?.currentUser?.email || "Professora";
+  const msg = `Olá! Criei minha conta no PlanejaEdu e quero solicitar a liberação do acesso. Nome: ${name}. Estou enviando o comprovante do PIX de R$ 10,00.`;
+  return `https://wa.me/${number}?text=${encodeURIComponent(msg)}`;
+}
+function showPaymentScreen(){
+  $("app").classList.add("hidden");
+  $("paymentScreen").classList.remove("hidden");
+  const url=getWhatsAppUrl();
+  const btn=$("whatsappRequestBtn");
+  if(url){
+    btn.href=url;
+    btn.classList.remove("disabled");
+  }else{
+    btn.href="#";
+    btn.classList.add("disabled");
+    btn.onclick=(e)=>{e.preventDefault();showToast("O WhatsApp do administrador ainda não foi configurado.");};
+  }
+  const status=$("paymentStatus");
+  const exempt=currentProfile?.paymentStatus==="exempt";
+  const requested=currentProfile?.paymentRequested===true;
+  if(exempt){
+    status.className="payment-status approved";
+    status.innerHTML="<b>✓ Acesso liberado pelo administrador</b><span>Você não precisa realizar o pagamento. Clique em verificar acesso.</span>";
+  }else if(currentProfile?.accessStatus==="approved"){
+    status.className="payment-status approved";
+    status.innerHTML="<b>✓ Acesso liberado</b><span>Sua conta já está autorizada a entrar na plataforma.</span>";
+  }else if(requested){
+    status.className="payment-status requested";
+    status.innerHTML="<b>📩 Pedido enviado</b><span>Seu pedido está aguardando a análise do administrador.</span>";
+  }else{
+    status.className="payment-status pending";
+    status.innerHTML="<b>⏳ Aguardando liberação</b><span>Faça o PIX e envie o pedido pelo WhatsApp para solicitar a liberação.</span>";
+  }
+}
+$("whatsappRequestBtn")?.addEventListener("click", async e=>{
+  if($("whatsappRequestBtn").classList.contains("disabled")) return;
+  if(firebaseReady && auth.currentUser){
+    try{
+      await updateDoc(doc(db,"usuarios",auth.currentUser.uid),{
+        paymentRequested:true, paymentRequestedAt:serverTimestamp()
+      });
+      currentProfile.paymentRequested=true;
+      showPaymentScreen();
+    }catch(err){ console.warn(err); }
+  }
+});
+$("paymentRefreshBtn")?.addEventListener("click", async ()=>{
+  if(firebaseReady && auth.currentUser){
+    currentProfile=await loadMyProfile(auth.currentUser);
+    if(currentProfile.accessStatus==="approved" || isAdmin()){
+      showToast("Acesso liberado!");
+      openApp(currentProfile.name||auth.currentUser.email?.split("@")[0]||"Professor(a)");
+    }else{
+      showPaymentScreen();
+      showToast("Ainda aguardando a liberação do administrador.");
+    }
+  }
+});
+$("paymentLogoutBtn")?.addEventListener("click", async ()=>{
+  if(firebaseReady && auth.currentUser) await signOut(auth);
+  $("paymentScreen").classList.add("hidden");
+  $("loginScreen").classList.remove("hidden");
+});
+
+async function loadAccessRequests(){
+  if(!isAdmin() || !firebaseReady) return;
+  const snap=await getDocs(collection(db,"usuarios"));
+  const list=snap.docs.map(d=>({uid:d.id,...d.data()}))
+    .filter(p=>p.role!=="admin" && (p.paymentRequested || p.accessStatus==="pending" || p.paymentStatus==="exempt"));
+  const box=$("accessRequestList");
+  if(!list.length){
+    box.innerHTML='<div class="empty-admin">Nenhum pedido pendente.</div>'; return;
+  }
+  box.innerHTML=list.map(p=>{
+    const state=p.accessStatus==="approved" ? "Aprovado" : p.paymentStatus==="exempt" ? "Cortesia" : "Pendente";
+    return `<div class="access-row">
+      <div class="access-person"><span class="teacher-avatar">${esc((p.name||p.email||"P").charAt(0).toUpperCase())}</span>
+        <div><strong>${esc(p.name||"Sem nome")}</strong><small>${esc(p.email||"")}</small></div>
+      </div>
+      <span class="access-state ${state==="Aprovado"?"ok":state==="Cortesia"?"gift":"wait"}">${state}</span>
+      <div class="access-actions">
+        <button class="mini-action approve" data-access-action="approve" data-uid="${esc(p.uid)}">Liberar</button>
+        <button class="mini-action gift" data-access-action="gift" data-uid="${esc(p.uid)}">Cortesia</button>
+        <button class="mini-action block" data-access-action="block" data-uid="${esc(p.uid)}">Bloquear</button>
+      </div>
+    </div>`;
+  }).join("");
+  box.querySelectorAll("[data-access-action]").forEach(b=>b.onclick=()=>handleAccessAction(b.dataset.uid,b.dataset.accessAction));
+}
+async function handleAccessAction(uid,action){
+  if(!isAdmin()) return;
+  const ref=doc(db,"usuarios",uid);
+  const data = action==="approve"
+    ? {accessStatus:"approved",paymentStatus:"paid",approvedAt:serverTimestamp()}
+    : action==="gift"
+      ? {accessStatus:"approved",paymentStatus:"exempt",approvedAt:serverTimestamp()}
+      : {accessStatus:"pending",paymentStatus:"pending",approvedAt:null};
+  try{
+    await updateDoc(ref,data);
+    await loadAccessRequests();
+    showToast(action==="approve"?"Acesso liberado.":action==="gift"?"Cortesia liberada.":"Acesso bloqueado.");
+  }catch(err){showToast("Erro: "+err.message);}
+}
+
+async function loadMyProfile(user){
+  try{
+    const snap = await getDoc(doc(db,"usuarios",user.uid));
+    if(snap.exists()) return {uid:user.uid,...snap.data()};
+  }catch(err){ console.warn("Perfil não carregado",err); }
+  return {
+    uid:user.uid,name:user.displayName||user.email?.split("@")[0]||"Professor(a)",
+    email:user.email,role:ADMIN_EMAILS.includes((user.email||"").toLowerCase())?"admin":"teacher",
+    allowedStages:[],allowedSubjects:[],features:{},
+    accessStatus:"pending",paymentStatus:"pending",paymentRequested:false
+  };
+}
+function isAdmin(){
+  return currentProfile?.role==="admin" ||
+    (auth?.currentUser?.email && ADMIN_EMAILS.includes(auth.currentUser.email.toLowerCase()));
+}
+function applyPermissions(){
+  const admin = isAdmin();
+  $("adminMenuWrap").classList.toggle("hidden",!admin);
+
+  const stages = currentProfile?.allowedStages || [];
+  const subjects = currentProfile?.allowedSubjects || [];
+  const features = currentProfile?.features || {};
+
+  // Filter stage and subject selectors for each professor.
+  const etapa = $("etapa"), disciplina = $("disciplina");
+  if(etapa && !admin){
+    [...etapa.options].forEach((o,i)=>{ if(i>0) o.hidden = !stages.includes(o.value); });
+  }
+  if(disciplina && !admin){
+    [...disciplina.options].forEach((o,i)=>{ if(i>0) o.hidden = !subjects.includes(o.value); });
+  }
+
+  // Hide modules that the admin did not grant.
+  document.querySelectorAll('[data-page="bncc"]').forEach(el=>el.closest("nav")?.classList.toggle("hidden",!admin && features.bncc===false));
+  document.querySelectorAll('[data-page="calendario"]').forEach(el=>el.closest("nav")?.classList.toggle("hidden",!admin && features.planejamento===false));
+  $("headerNewBtn").classList.toggle("hidden",!admin && features.criarPlano===false);
+  $("heroNewBtn").classList.toggle("hidden",!admin && features.criarPlano===false);
+
+  if(!admin && features.criarPlano===false) {
+    showToast("Sua conta está aguardando a liberação de áreas pelo administrador.");
+  }
+}
+
+function buildChecks(containerId, items, selected, type){
+  const box=$(containerId);
+  box.innerHTML=items.map(item=>{
+    const value=Array.isArray(item)?item[0]:item;
+    const label=Array.isArray(item)?item[1]:item;
+    const checked=type==="feature" ? !!(selected||{})[value] : (selected||[]).includes(value);
+    return `<label class="check-chip"><input type="checkbox" data-check-type="${type}" value="${esc(value)}" ${checked?"checked":""}><span>${esc(label)}</span></label>`;
+  }).join("");
+}
+function getChecks(containerId,type){
+  return [...document.querySelectorAll(`#${containerId} input[data-check-type="${type}"]`)]
+    .filter(x=>x.checked).map(x=>x.value);
+}
+function getFeatureChecks(){
+  const obj={};
+  document.querySelectorAll('#featureChecks input[data-check-type="feature"]').forEach(x=>obj[x.value]=x.checked);
+  return obj;
+}
+
+async function loadTeacherProfiles(){
+  if(!isAdmin() || !firebaseReady) return;
+  const snap=await getDocs(collection(db,"usuarios"));
+  allTeacherProfiles=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(p=>p.role!=="admin");
+  renderTeacherList();
+}
+function renderTeacherList(){
+  const box=$("teacherList");
+  if(!allTeacherProfiles.length){
+    box.innerHTML='<div class="empty-admin">Nenhuma professora cadastrada ainda.</div>'; return;
+  }
+  box.innerHTML=allTeacherProfiles.map(p=>`
+    <button class="teacher-row" data-teacher-id="${esc(p.uid)}">
+      <span class="teacher-avatar">${esc((p.name||p.email||"P").charAt(0).toUpperCase())}</span>
+      <span class="teacher-info"><strong>${esc(p.name||"Sem nome")}</strong><small>${esc(p.email||"")}</small></span>
+      <span class="teacher-status">${(p.allowedStages?.length||0)+(p.allowedSubjects?.length||0)>0?"Personalizada":"Aguardando"}</span>
+    </button>`).join("");
+  box.querySelectorAll(".teacher-row").forEach(b=>b.onclick=()=>selectTeacher(b.dataset.teacherId));
+}
+function selectTeacher(uid){
+  const p=allTeacherProfiles.find(x=>x.uid===uid); if(!p)return;
+  $("selectedTeacherId").value=uid;
+  $("selectedTeacherLabel").textContent=p.name||p.email||"Conta";
+  $("adminTeacherName").value=p.name||"";
+  $("adminTeacherEmail").value=p.email||"";
+  $("adminInstitution").value=p.institution||"escola";
+  $("adminNotes").value=p.notes||"";
+  buildChecks("stageChecks",STAGES,p.allowedStages||[],"stage");
+  buildChecks("subjectChecks",SUBJECTS,p.allowedSubjects||[],"subject");
+  buildChecks("featureChecks",FEATURES,p.features||{},"feature");
+}
+$("refreshTeachersBtn")?.addEventListener("click",loadTeacherProfiles);
+$("refreshAccessBtn")?.addEventListener("click",loadAccessRequests);
+$("teacherAccessForm")?.addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!isAdmin()){showToast("Acesso administrativo não autorizado.");return;}
+  const uid=$("selectedTeacherId").value;
+  if(!uid){showToast("Selecione uma professora.");return;}
+  try{
+    await updateDoc(doc(db,"usuarios",uid),{
+      institution:$("adminInstitution").value,
+      allowedStages:getChecks("stageChecks","stage"),
+      allowedSubjects:getChecks("subjectChecks","subject"),
+      features:getFeatureChecks(),
+      notes:$("adminNotes").value.trim(),
+      updatedAt:serverTimestamp()
+    });
+    showToast("Personalização salva com sucesso!");
+    await loadTeacherProfiles();
+  }catch(err){showToast("Erro ao salvar: "+err.message);}
+});
 
 $("loginForm").addEventListener("submit", async e=>{
   e.preventDefault();
@@ -53,6 +318,69 @@ $("loginForm").addEventListener("submit", async e=>{
     await signInWithEmailAndPassword(auth, $("email").value, $("password").value);
   } catch(err) {
     showToast("Não foi possível entrar: " + (err.code || err.message));
+  }
+});
+
+// Alternância entre login e criação de conta
+function switchAuth(mode){
+  const login = mode === "login";
+  $("loginPanel").classList.toggle("hidden", !login);
+  $("signupPanel").classList.toggle("hidden", login);
+  $("tabLogin").classList.toggle("active", login);
+  $("tabSignup").classList.toggle("active", !login);
+}
+$("tabLogin").addEventListener("click", ()=>switchAuth("login"));
+$("tabSignup").addEventListener("click", ()=>switchAuth("signup"));
+
+$("signupForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const name = $("signupName").value.trim();
+  const email = $("signupEmail").value.trim();
+  const password = $("signupPassword").value;
+  const confirm = $("signupPassword2").value;
+
+  if(password !== confirm){
+    showToast("As senhas não são iguais.");
+    return;
+  }
+  if(password.length < 6){
+    showToast("A senha precisa ter pelo menos 6 caracteres.");
+    return;
+  }
+  if(!firebaseReady){
+    showToast("Configure o Firebase para criar contas.");
+    return;
+  }
+
+  try{
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(cred.user, {displayName:name});
+
+    const defaultProfile = {
+      uid: cred.user.uid,
+      name,
+      email,
+      role: "teacher",
+      institution: "escola",
+      allowedStages: [],
+      allowedSubjects: [],
+      features: {criarPlano:false,bncc:false,planejamento:false,pdf:false,modelos:false},
+      accessStatus: "pending",
+      paymentStatus: "pending",
+      paymentRequested: false,
+      notes: "",
+      createdAt: serverTimestamp()
+    };
+    await setDoc(doc(db,"usuarios",cred.user.uid), defaultProfile);
+    showToast("Conta criada! O administrador precisa liberar suas áreas.");
+  }catch(err){
+    const messages = {
+      "auth/email-already-in-use":"Este e-mail já possui uma conta.",
+      "auth/invalid-email":"Digite um e-mail válido.",
+      "auth/weak-password":"A senha é muito fraca.",
+      "auth/operation-not-allowed":"Ative o login por e-mail e senha no Firebase."
+    };
+    showToast(messages[err.code] || "Não foi possível criar a conta.");
   }
 });
 
@@ -83,6 +411,7 @@ function goPage(page){
   $("pageTitle").textContent=titles[page]||"PlanejaEdu";
   if(page==="planos") renderPlans();
   if(page==="calendario") renderCalendar();
+  if(page==="admin"){ loadTeacherProfiles(); loadAccessRequests(); }
 }
 
 $("instituicao").addEventListener("change", updateHeaderPreview);
@@ -190,6 +519,10 @@ $("previewBtn").onclick=()=>printPlan(buildPlan(), true);
 
 $("planForm").addEventListener("submit", async e=>{
   e.preventDefault();
+  if(!isAdmin() && currentProfile && currentProfile.features?.criarPlano===false){
+    showToast("O administrador ainda não liberou a criação de planos para sua conta.");
+    return;
+  }
   const plan=buildPlan();
   if(!plan.tema){showToast("Informe o tema.");return;}
   try{
@@ -308,3 +641,8 @@ function section(title,val){return val?`<div class="print-section"><h4>${title}<
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 
 updateHeaderPreview(); updateMini();
+
+$("profileBtn")?.addEventListener("click", ()=>{
+  const name = $("sideUserName")?.textContent || "Professor(a)";
+  showToast(`Perfil ativo: ${name}`);
+});

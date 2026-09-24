@@ -9,21 +9,111 @@
 </head>
 <body>
   <div id="loginScreen" class="login-screen">
-    <div class="login-card">
-      <div class="brand-mark">📚</div>
-      <h1>PlanejaEdu</h1>
-      <p>Gerenciador completo de planos de aula</p>
-      <form id="loginForm">
-        <label>E-mail
-          <input id="email" type="email" placeholder="professor@escola.com" required>
-        </label>
-        <label>Senha
-          <input id="password" type="password" placeholder="••••••••" required>
-        </label>
-        <button class="primary full" type="submit">Entrar</button>
-      </form>
-      <button id="demoBtn" class="secondary full">Entrar no modo demonstração</button>
-      <small>Para usar o Firebase, preencha <b>firebase-config.js</b>.</small>
+    <div class="login-shell">
+      <div class="login-brand-panel">
+        <div class="login-brand">
+          <div class="brand-mark">📚</div>
+          <div>
+            <strong>PlanejaEdu</strong>
+            <span>Gestão pedagógica inteligente</span>
+          </div>
+        </div>
+        <div class="login-panel-content">
+          <span class="eyebrow">PLANEJAMENTO ESCOLAR</span>
+          <h1>Seu planejamento.<br><em>Mais organizado.</em></h1>
+          <p>Crie, organize e acompanhe seus planos de aula com uma experiência simples, elegante e profissional.</p>
+          <div class="login-benefits">
+            <div><b>✓</b><span>Planos organizados por turma e disciplina</span></div>
+            <div><b>✓</b><span>Integração com Firebase</span></div>
+            <div><b>✓</b><span>Impressão e PDF com cabeçalho institucional</span></div>
+          </div>
+        </div>
+        <div class="login-footer">PlanejaEdu • Gestão de planos de aula</div>
+      </div>
+
+      <div class="login-card">
+        <div class="auth-tabs">
+          <button id="tabLogin" class="auth-tab active" type="button">Entrar</button>
+          <button id="tabSignup" class="auth-tab" type="button">Criar conta</button>
+        </div>
+
+        <div id="loginPanel">
+          <h2>Bem-vindo(a) de volta</h2>
+          <p class="auth-subtitle">Entre para acessar seus planejamentos.</p>
+          <form id="loginForm">
+            <label>E-mail
+              <input id="email" type="email" placeholder="seuemail@escola.com" required>
+            </label>
+            <label>Senha
+              <input id="password" type="password" placeholder="Digite sua senha" required>
+            </label>
+            <button class="primary full" type="submit">Entrar na plataforma <span>→</span></button>
+          </form>
+          <button id="demoBtn" class="secondary full">Conhecer em modo demonstração</button>
+          <small>Use sua conta cadastrada no Firebase.</small>
+        </div>
+
+        <div id="signupPanel" class="hidden">
+          <h2>Crie sua conta</h2>
+          <p class="auth-subtitle">Cadastre seu acesso para começar a planejar.</p>
+          <form id="signupForm">
+            <label>Nome completo
+              <input id="signupName" type="text" placeholder="Seu nome completo" required>
+            </label>
+            <label>E-mail
+              <input id="signupEmail" type="email" placeholder="seuemail@escola.com" required>
+            </label>
+            <label>Senha
+              <input id="signupPassword" type="password" minlength="6" placeholder="Mínimo de 6 caracteres" required>
+            </label>
+            <label>Confirmar senha
+              <input id="signupPassword2" type="password" minlength="6" placeholder="Repita sua senha" required>
+            </label>
+            <button class="primary full" type="submit">Criar minha conta <span>→</span></button>
+          </form>
+          <small>A conta será criada no Firebase Authentication.</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="paymentScreen" class="payment-screen hidden">
+    <div class="payment-card">
+      <div class="payment-brand">
+        <div class="brand-mark small">📚</div>
+        <div><strong>PlanejaEdu</strong><span>Acesso à plataforma</span></div>
+      </div>
+
+      <div class="payment-step">
+        <span>01</span><div><b>Ative seu acesso</b><small>Pagamento único de R$ 10,00</small></div>
+      </div>
+
+      <div class="pix-box">
+        <div class="pix-title">
+          <span class="pix-icon">PIX</span>
+          <div><b>Libere seu acesso</b><small>Escaneie o QR Code abaixo</small></div>
+        </div>
+        <img src="assets/pix-10-reais.png" class="pix-image" alt="QR Code para pagamento de R$ 10,00">
+        <div class="payment-value"><span>Valor do acesso</span><strong>R$ 10,00</strong></div>
+      </div>
+
+      <div class="payment-instructions">
+        <div><span>1</span> Faça o PIX de <b>R$ 10,00</b>.</div>
+        <div><span>2</span> Tire um print ou guarde o comprovante.</div>
+        <div><span>3</span> Clique abaixo e envie seu pedido pelo WhatsApp.</div>
+      </div>
+
+      <a id="whatsappRequestBtn" class="whatsapp-btn" href="#" target="_blank" rel="noopener">
+        <span>◉</span> Enviar pedido pelo WhatsApp
+      </a>
+      <button id="paymentRefreshBtn" class="secondary full" type="button">Já enviei o pedido — verificar acesso</button>
+      <button id="paymentLogoutBtn" class="link-btn" type="button">Sair da conta</button>
+
+      <div id="paymentStatus" class="payment-status pending">
+        <b>⏳ Aguardando liberação</b>
+        <span>Após enviar o comprovante, o administrador irá analisar e liberar sua conta.</span>
+      </div>
     </div>
   </div>
 
@@ -31,17 +121,37 @@
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark small">📚</div>
-        <div><strong>PlanejaEdu</strong><span>Planos de Aula</span></div>
+        <div><strong>Planeja<span>Edu</span></strong><small>GESTÃO PEDAGÓGICA</small></div>
       </div>
+
+      <div class="menu-label">MENU PRINCIPAL</div>
       <nav>
-        <button data-page="dashboard" class="nav-btn active">🏠 Início</button>
-        <button data-page="novo" class="nav-btn">📝 Novo plano</button>
-        <button data-page="planos" class="nav-btn">📚 Meus planos</button>
-        <button data-page="calendario" class="nav-btn">📅 Planejamento</button>
-        <button data-page="bncc" class="nav-btn">🎯 BNCC</button>
+        <button data-page="dashboard" class="nav-btn active"><span class="nav-icon">⌂</span><span>Visão geral</span></button>
+        <button data-page="novo" class="nav-btn"><span class="nav-icon">＋</span><span>Novo plano</span><b class="nav-badge">Criar</b></button>
+        <button data-page="planos" class="nav-btn"><span class="nav-icon">▤</span><span>Meus planos</span></button>
+        <button data-page="calendario" class="nav-btn"><span class="nav-icon">□</span><span>Planejamento</span></button>
+        <button data-page="bncc" class="nav-btn"><span class="nav-icon">◇</span><span>BNCC</span></button>
       </nav>
-      <div class="sidebar-bottom">
-        <button id="logoutBtn" class="nav-btn">↪ Sair</button>
+
+      <div class="sidebar-divider"></div>
+      <div id="adminMenuWrap" class="hidden">
+        <div class="sidebar-divider"></div>
+        <div class="menu-label">ADMINISTRAÇÃO</div>
+        <nav>
+          <button data-page="admin" class="nav-btn"><span class="nav-icon">⚙</span><span>Gestão de professoras</span></button>
+        </nav>
+      </div>
+
+      <div class="menu-label">SISTEMA</div>
+      <nav>
+        <button id="profileBtn" class="nav-btn"><span class="nav-icon">○</span><span>Meu perfil</span></button>
+        <button id="logoutBtn" class="nav-btn"><span class="nav-icon">↪</span><span>Sair da conta</span></button>
+      </nav>
+
+      <div class="sidebar-user">
+        <div class="avatar" id="sideAvatar">P</div>
+        <div><strong id="sideUserName">Professor(a)</strong><span>Conta ativa</span></div>
+        <i>•••</i>
       </div>
     </aside>
 
@@ -174,6 +284,79 @@
           <h3>Banco de habilidades</h3>
           <p>Cadastre ou consulte códigos e descrições usados nos seus planos. O banco pode ser ampliado no Firebase.</p>
           <div id="bnccList" class="bncc-list"></div>
+        </div>
+      </section>
+
+      <section id="page-admin" class="page hidden">
+        <div class="admin-hero">
+          <div>
+            <span class="eyebrow">ÁREA ADMINISTRATIVA</span>
+            <h1>Gestão personalizada das professoras</h1>
+            <p>Defina exatamente quais etapas, disciplinas e recursos cada conta poderá utilizar.</p>
+          </div>
+          <div class="admin-hero-icon">⚙</div>
+        </div>
+
+        <div class="admin-payment-card admin-card">
+          <div class="admin-card-head">
+            <div><span class="card-kicker">ACESSOS</span><h3>Pedidos de acesso e pagamentos</h3></div>
+            <button id="refreshAccessBtn" class="secondary">Atualizar</button>
+          </div>
+          <p class="admin-help">Aprove professoras que pagaram ou libere contas gratuitamente quando desejar.</p>
+          <div id="accessRequestList" class="access-list">
+            <div class="empty-admin">Carregando pedidos...</div>
+          </div>
+        </div>
+
+        <div class="admin-grid">
+          <div class="admin-card">
+            <div class="admin-card-head">
+              <div><span class="card-kicker">CONTAS</span><h3>Professoras cadastradas</h3></div>
+              <button id="refreshTeachersBtn" class="secondary">Atualizar</button>
+            </div>
+            <div id="teacherList" class="teacher-list">
+              <div class="empty-admin">Carregando contas...</div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-head">
+              <div><span class="card-kicker">PERSONALIZAÇÃO</span><h3>Permissões da conta</h3></div>
+              <span id="selectedTeacherLabel" class="selected-label">Nenhuma selecionada</span>
+            </div>
+            <form id="teacherAccessForm">
+              <input type="hidden" id="selectedTeacherId">
+              <label>Nome da professora
+                <input id="adminTeacherName" readonly>
+              </label>
+              <label>E-mail
+                <input id="adminTeacherEmail" readonly>
+              </label>
+              <label>Instituição
+                <select id="adminInstitution">
+                  <option value="creche">Creche</option>
+                  <option value="escola">Escola Municipal Professora Irmã Blandina CISZ</option>
+                  <option value="integral">Educação em Tempo Integral</option>
+                </select>
+              </label>
+              <div class="permission-section">
+                <div class="permission-title">Etapas liberadas</div>
+                <div id="stageChecks" class="check-grid"></div>
+              </div>
+              <div class="permission-section">
+                <div class="permission-title">Disciplinas liberadas</div>
+                <div id="subjectChecks" class="check-grid"></div>
+              </div>
+              <div class="permission-section">
+                <div class="permission-title">Recursos liberados</div>
+                <div id="featureChecks" class="check-grid"></div>
+              </div>
+              <label>Observação interna
+                <textarea id="adminNotes" rows="3" placeholder="Ex.: Plano personalizado para a professora..."></textarea>
+              </label>
+              <button id="saveTeacherAccess" class="primary full" type="submit">Salvar personalização</button>
+            </form>
+          </div>
         </div>
       </section>
     </main>

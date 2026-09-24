@@ -228,3 +228,165 @@ button{cursor:pointer}
   .form-card,.preview-card,.calendar-card,.bncc-card{padding:18px}
   .main{padding-left:11px;padding-right:11px}
 }
+
+/* ===== POLIMENTO PROFISSIONAL ===== */
+.login-shell{
+  width:min(1060px,100%);min-height:650px;display:grid;grid-template-columns:1.05fr .95fr;
+  background:#fff;border:1px solid #fff;border-radius:30px;overflow:hidden;box-shadow:0 30px 90px rgba(39,43,83,.15)
+}
+.login-brand-panel{
+  position:relative;padding:42px;color:#fff;overflow:hidden;
+  background:linear-gradient(145deg,#4448c9 0%,#6264df 52%,#8b70e9 100%);
+  display:flex;flex-direction:column
+}
+.login-brand-panel:before,.login-brand-panel:after{
+  content:"";position:absolute;border-radius:50%;background:#fff;opacity:.08
+}
+.login-brand-panel:before{width:420px;height:420px;right:-210px;top:-170px}
+.login-brand-panel:after{width:300px;height:300px;left:-170px;bottom:-140px}
+.login-brand{display:flex;align-items:center;gap:12px;position:relative;z-index:2}
+.login-brand .brand-mark{background:rgba(255,255,255,.15);box-shadow:none;margin:0}
+.login-brand strong{font-family:"Plus Jakarta Sans";font-size:19px;display:block}
+.login-brand span{font-size:11px;color:#e4e5ff}
+.login-panel-content{position:relative;z-index:2;margin:auto 0;padding:50px 20px 40px 0}
+.login-panel-content .eyebrow{font-size:10px;letter-spacing:2px}
+.login-panel-content h1{font-family:"Plus Jakarta Sans";font-size:43px;line-height:1.08;margin:14px 0}
+.login-panel-content h1 em{font-style:normal;color:#dddfff}
+.login-panel-content p{max-width:470px;color:#ececff;line-height:1.7}
+.login-benefits{margin-top:28px;display:grid;gap:13px}
+.login-benefits div{display:flex;gap:10px;align-items:center;font-size:12px;color:#f5f5ff}
+.login-benefits b{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#ffffff18}
+.login-footer{position:relative;z-index:2;color:#d9daff;font-size:10px;letter-spacing:.4px}
+.login-card{display:block;width:auto;border-radius:0;box-shadow:none;padding:52px 48px;background:#fff}
+.auth-tabs{display:flex;gap:24px;border-bottom:1px solid #edf0f5;margin-bottom:30px}
+.auth-tab{border:0;background:transparent;padding:0 0 13px;color:#969dad;font-weight:700;position:relative}
+.auth-tab.active{color:#4e51cf}
+.auth-tab.active:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:#5b5ce2;border-radius:2px}
+.auth-subtitle{color:var(--muted)!important;margin:0 0 27px!important}
+.login-card h2{font-family:"Plus Jakarta Sans";font-size:25px;margin:0 0 7px}
+.login-card .primary span{float:right;font-size:17px}
+.login-card small{text-align:left}
+.menu-label{font-size:9px;font-weight:800;color:#a2a8b6;letter-spacing:1.3px;padding:0 13px 8px}
+.sidebar-divider{height:1px;background:#eef0f5;margin:18px 10px}
+.nav-btn{display:flex;align-items:center;gap:11px;position:relative}
+.nav-btn .nav-icon{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;font-size:17px;font-weight:500;color:#7e8797;flex:0 0 27px}
+.nav-btn.active .nav-icon{background:#dddfff;color:#4d50d1}
+.nav-btn>span:not(.nav-icon){flex:1}
+.nav-badge{font-size:8px;background:#f0efff;color:#5b5ce2;padding:4px 6px;border-radius:6px;text-transform:uppercase}
+.sidebar-user{
+  margin-top:18px;padding:11px;background:#f8f8fc;border:1px solid #eceef4;border-radius:13px;
+  display:flex;align-items:center;gap:9px
+}
+.sidebar-user .avatar{
+  width:31px;height:31px;border-radius:10px;background:linear-gradient(135deg,#5b5ce2,#8b70e9);
+  color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px
+}
+.sidebar-user strong{display:block;font-size:10px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sidebar-user span{display:block;color:#9aa1ae;font-size:9px;margin-top:2px}
+.sidebar-user i{margin-left:auto;color:#a3a9b5;font-size:10px;font-style:normal}
+
+@media(max-width:800px){
+  .login-shell{grid-template-columns:1fr;min-height:auto}
+  .login-brand-panel{display:none}
+  .login-card{padding:35px 28px}
+}
+
+/* ===== ÁREA ADMINISTRATIVA ===== */
+.admin-hero{
+  background:linear-gradient(120deg,#252b58,#4d51c9 60%,#7565e3);
+  color:#fff;border-radius:22px;padding:28px 32px;display:flex;justify-content:space-between;
+  align-items:center;overflow:hidden;position:relative;margin-bottom:18px
+}
+.admin-hero:after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;right:-100px;top:-120px;background:#fff1}
+.admin-hero h1{font-family:"Plus Jakarta Sans";font-size:25px;margin:8px 0}
+.admin-hero p{color:#e5e6ff;margin:0;font-size:13px}
+.admin-hero-icon{font-size:60px;opacity:.85;position:relative;z-index:1}
+.admin-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:18px}
+.admin-card{background:#fff;border:1px solid var(--line);border-radius:19px;padding:21px;box-shadow:0 5px 20px #22283f04}
+.admin-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:1px solid #eef0f4;padding-bottom:15px;margin-bottom:16px}
+.card-kicker{display:block;color:#9a9faf;font-size:9px;font-weight:800;letter-spacing:1.4px}
+.admin-card h3{font-family:"Plus Jakarta Sans";font-size:16px;margin:5px 0 0}
+.selected-label{font-size:10px;background:#f1f1ff;color:#5558ce;border-radius:8px;padding:7px 9px}
+.teacher-list{display:grid;gap:7px;max-height:600px;overflow:auto}
+.teacher-row{
+  width:100%;border:1px solid #edf0f5;background:#fff;border-radius:12px;padding:11px;
+  display:flex;align-items:center;gap:10px;text-align:left;transition:.2s
+}
+.teacher-row:hover{border-color:#cfd0fa;background:#fafaff;transform:translateX(2px)}
+.teacher-avatar{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#5b5ce2,#8b70e9);color:#fff;display:grid;place-items:center;font-weight:800}
+.teacher-info{flex:1;min-width:0}.teacher-info strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.teacher-info small{display:block;color:#949baa;font-size:10px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.teacher-status{font-size:9px;color:#4f9a79;background:#effaf5;padding:5px 7px;border-radius:7px;white-space:nowrap}
+.empty-admin{padding:30px;text-align:center;color:#9299a8;font-size:12px;background:#fafbfe;border-radius:12px}
+.permission-section{margin:18px 0}
+.permission-title{font-size:11px;font-weight:800;margin-bottom:9px;color:#4b5365}
+.check-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.check-chip{margin:0!important;display:flex!important;flex-direction:row!important;align-items:center;gap:8px;padding:9px;border:1px solid #e9ebf1;border-radius:9px;background:#fafbfe;font-size:10px!important;font-weight:600!important;cursor:pointer}
+.check-chip input{accent-color:#5b5ce2;width:15px;height:15px}
+.check-chip:has(input:checked){background:#f0f0ff;border-color:#cacaFA;color:#4d50cc}
+@media(max-width:1000px){.admin-grid{grid-template-columns:1fr}}
+@media(max-width:620px){.check-grid{grid-template-columns:1fr}.admin-hero{padding:22px}.admin-hero-icon{display:none}}
+
+/* ===== PAGAMENTO / ATIVAÇÃO ===== */
+.payment-screen{
+  min-height:100vh;display:grid;place-items:center;padding:24px;
+  background:radial-gradient(circle at 15% 10%,#e1e3ff 0,transparent 28%),#f6f7fb
+}
+.payment-card{
+  width:min(560px,100%);background:#fff;border:1px solid #e7e9f0;border-radius:25px;
+  padding:28px;box-shadow:0 25px 70px rgba(39,43,83,.12)
+}
+.payment-brand{display:flex;align-items:center;gap:11px;margin-bottom:22px}
+.payment-brand .brand-mark{margin:0;width:43px;height:43px;border-radius:14px;font-size:20px}
+.payment-brand strong{display:block;font-family:"Plus Jakarta Sans";font-size:16px}
+.payment-brand span{display:block;color:#939aaa;font-size:10px;margin-top:2px}
+.payment-step{display:flex;align-items:center;gap:11px;margin-bottom:18px}
+.payment-step>span{width:29px;height:29px;border-radius:9px;background:#eeeeff;color:#5457d1;display:grid;place-items:center;font-size:10px;font-weight:800}
+.payment-step b{display:block;font-family:"Plus Jakarta Sans";font-size:14px}
+.payment-step small{display:block;color:#9299a8;font-size:10px;margin-top:2px}
+.pix-box{border:1px solid #e8eaf1;background:#fafbfe;border-radius:19px;padding:19px;text-align:center}
+.pix-title{display:flex;align-items:center;text-align:left;gap:10px;margin-bottom:14px}
+.pix-icon{background:#32bc72;color:#fff;border-radius:8px;padding:7px 8px;font-size:9px;font-weight:900}
+.pix-title b{display:block;font-size:12px}
+.pix-title small{display:block;color:#949baa;font-size:10px;margin-top:2px}
+.pix-image{display:block;width:min(340px,100%);height:auto;margin:0 auto;border-radius:12px;background:#fff}
+.payment-value{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e9ebf1;margin-top:15px;padding-top:13px}
+.payment-value span{color:#8c94a3;font-size:11px}
+.payment-value strong{font-family:"Plus Jakarta Sans";font-size:18px}
+.payment-instructions{display:grid;gap:8px;margin:18px 0;color:#60697a;font-size:11px}
+.payment-instructions div{display:flex;gap:9px;align-items:center}
+.payment-instructions span{width:21px;height:21px;border-radius:7px;background:#f0f0ff;color:#5558ce;display:grid;place-items:center;font-size:9px;font-weight:800}
+.whatsapp-btn{
+  width:100%;display:flex;justify-content:center;align-items:center;gap:8px;text-decoration:none;
+  border-radius:12px;padding:13px 17px;background:#28b66f;color:#fff;font-weight:800;
+  box-shadow:0 8px 18px #28b66f2b
+}
+.whatsapp-btn:hover{filter:brightness(.97);transform:translateY(-1px)}
+.whatsapp-btn.disabled{background:#aab0bb;box-shadow:none;cursor:not-allowed}
+.link-btn{display:block;margin:14px auto 0;border:0;background:none;color:#8d95a4;font-size:11px}
+.payment-status{margin-top:17px;padding:12px;border-radius:11px;display:grid;gap:3px}
+.payment-status b{font-size:11px}.payment-status span{font-size:10px;line-height:1.45}
+.payment-status.pending{background:#fff8e8;color:#936d19}
+.payment-status.requested{background:#eef4ff;color:#4965a8}
+.payment-status.approved{background:#ebfaf3;color:#3d8b68}
+
+/* ADMIN ACCESS REQUESTS */
+.admin-payment-card{margin-bottom:18px}
+.admin-help{color:#8b93a2;font-size:11px;margin:0 0 14px}
+.access-list{display:grid;gap:8px}
+.access-row{
+  display:grid;grid-template-columns:minmax(170px,1fr) auto auto;align-items:center;gap:12px;
+  padding:10px;border:1px solid #eceef3;border-radius:11px;background:#fbfcff
+}
+.access-person{display:flex;align-items:center;gap:9px;min-width:0}
+.access-person strong{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.access-person small{display:block;color:#959cab;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.access-state{font-size:9px;padding:5px 7px;border-radius:7px;white-space:nowrap}
+.access-state.wait{background:#fff5df;color:#9a711c}.access-state.ok{background:#ecfaf3;color:#408969}.access-state.gift{background:#f1edff;color:#6a55ba}
+.access-actions{display:flex;gap:5px}
+.mini-action{border:0;border-radius:7px;padding:6px 8px;font-size:9px;font-weight:750}
+.mini-action.approve{background:#eaf9f1;color:#3b8a66}.mini-action.gift{background:#f0ecff;color:#6954b6}.mini-action.block{background:#fff0f0;color:#a45252}
+@media(max-width:700px){
+  .payment-card{padding:19px}
+  .access-row{grid-template-columns:1fr}
+  .access-actions{justify-content:flex-start}
+}
