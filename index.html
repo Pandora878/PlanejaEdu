@@ -88,6 +88,12 @@
         <label>Disciplina<select id="pSubject"></select></label>
         <label>Escola / instituição<input id="pSchool" placeholder="Nome da escola"></label>
         <label>Modalidade<select id="pMode"><option>Regular</option><option>Integral</option></select></label>
+        <label class="header-select-label">Cabeçalho institucional<select id="pHeaderType">
+          <option value="">Sem cabeçalho</option>
+          <option value="escola">Município + Secretaria + Escola</option>
+          <option value="integral">Secretaria + Educação em Tempo Integral</option>
+        </select><small>Escolha o modelo que será usado no PDF e na visualização do plano.</small></label>
+        <div id="headerPreview" class="header-preview-wrap"></div>
       </div></div>
       <div class="form-section"><h3>Planejamento pedagógico</h3>
         <label>Objetivos de aprendizagem<textarea id="pObjectives" placeholder="Descreva os objetivos..."></textarea></label>

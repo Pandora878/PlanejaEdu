@@ -1,54 +1,17 @@
-# PlanejaEdu — versão com Administração de Professoras
+# PlanejaEdu — Cabeçalhos institucionais
 
-## O que foi acrescentado
-- Área **Administrar professoras** exclusiva para administradores.
-- Cadastro/listagem das professoras vindas do Firestore em `professores`.
-- Busca por nome, e-mail ou escola.
-- Edição individual de cada professora.
-- Vinculação de **turmas**.
-- Vinculação de **disciplinas**.
-- Definição de **escola/instituição**.
-- Definição de **Regular / Integral**.
-- Definição do tipo de cabeçalho:
-  - Creche — apenas cabeçalho
-  - Escola — cabeçalho ESCOLA PROJETO
-  - Escola — cabeçalho ESCOLA PROJETO INTEGRAL
-- Campo para colocar o **texto exato do cabeçalho**.
-- Ativar/desativar conta.
-- Liberar acesso sem pagamento.
-- As turmas e disciplinas configuradas pelo administrador passam a aparecer no formulário da professora.
-- Cada plano continua vinculado ao UID da professora.
-- A consulta de planos não exige índice composto do Firestore: os registros são ordenados no navegador.
+Atualização incluída:
+- Seletor de cabeçalho no cadastro do plano.
+- Pré-visualização do cabeçalho antes de salvar.
+- Modelo “Município de Lajeado Grande + Secretaria + Escola”.
+- Modelo “Secretaria Municipal de Educação de Lajeado Grande-SC + Educação em Tempo Integral”.
+- O modelo escolhido é salvo junto ao plano no Firestore.
+- A visualização do plano abre com o cabeçalho escolhido.
+- O administrador pode definir o cabeçalho da professora na Área Admin.
 
-## Administrador principal
-UID configurado:
-`BDmAQWzHytWVucAsuy4JiCOlIgB2`
-
-## Estrutura do professor
-Coleção `professores`, documento com ID igual ao UID:
-
-```text
-uid
-nome
-email
-escola
-modalidade
-cabecalhoTipo
-cabecalhoTexto
-turmas: []
-disciplinas: []
-ativo: true/false
-acessoGratuito: true/false
-criadoEm
-atualizadoEm
-```
-
-## Publicação
-1. Substitua os arquivos do site pelo conteúdo deste ZIP.
-2. Publique no Netlify.
-3. No Firebase Authentication, habilite E-mail/Senha e, se quiser, Google.
-4. No Firestore, publique `firestore.rules`.
-5. Faça login com a conta administradora. O botão **Área Admin** aparecerá automaticamente.
-
-## Segurança
-A interface não é a segurança. A autorização real é feita pelas regras do Firestore. O administrador principal é identificado pelo UID acima; administradores adicionais podem ser registrados em `/admin/UID` pelo administrador principal.
+Arquivos principais:
+- `index.html`
+- `styles.css`
+- `app.js`
+- `header-crest.png`
+- `firestore.rules`
