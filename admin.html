@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PlanejaEdu — Área Admin</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="topbar"><a class="brand" href="index.html"><img src="assets/planejaedu-logo.png" alt="PlanejaEdu"></a>
+<nav><button class="admin-top" id="logout">Sair</button></nav></header>
+<main style="min-height:80vh;padding:60px 7vw;background:#f7f8ff"><div style="max-width:1100px;margin:auto">
+<div style="background:#fff;border-radius:28px;padding:42px;box-shadow:0 20px 60px #27345418">
+<p class="eyebrow">ADMINISTRAÇÃO</p><h1 style="font-size:46px">Área Admin</h1>
+<p class="lead">Aqui você poderá administrar professoras, permissões, escolas, cabeçalhos, disciplinas, planos e acessos.</p>
+<div id="adminStatus" style="padding:18px;background:#eef4ff;border-radius:14px;color:#315aa8;font-weight:700">Verificando permissão...</div>
+</div></div></main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+const firebaseConfig={apiKey:"AIzaSyCAoPpo30vk_aWjLRJPm1D55U10r25hr00",authDomain:"planejaeducaaaa.firebaseapp.com",projectId:"planejaeducaaaa",storageBucket:"planejaeducaaaa.firebasestorage.app",messagingSenderId:"619532705806",appId:"1:619532705806:web:dcb28fc66b8675298e1c5f"};
+const app=initializeApp(firebaseConfig);const auth=getAuth(app);
+const ADMIN_UID="BDmAQWzHytWVucAsuy4JiCOlIgB2";
+onAuthStateChanged(auth,u=>{if(!u||u.uid!==ADMIN_UID){location.href="index.html";return;}document.getElementById("adminStatus").textContent=`Administrador autenticado • UID: ${u.uid}`;});
+document.getElementById("logout").onclick=()=>signOut(auth).then(()=>location.href="index.html");
+</script>
+</body></html>
