@@ -24,7 +24,8 @@ service cloud.firestore {
     }
 
     match /admin/{uid} {
-      allow read: if isAdmin() || isOwner(uid);
+      // Evita avaliação recursiva: isAdmin() consulta esta coleção.
+      allow read: if isMainAdmin() || isOwner(uid);
       allow create, update, delete: if isMainAdmin();
     }
 

@@ -1,25 +1,35 @@
-# PlanejaEdu — versão com Painel da Professora
+# PlanejaEdu — versão corrigida
 
-## Painel incluído
-- Minha agenda: tarefas, reuniões, provas, entregas e lembretes.
-- Turmas e alunos: turmas vinculadas pela administração e cadastro pessoal de alunos.
-- Diário de aula: data, turma, disciplina, conteúdo e observações.
-- Frequência: chamada por turma e por aluno, com presente/falta/justificada.
-- Avaliações e notas: cadastro de instrumentos avaliativos e valor máximo.
-- Materiais pedagógicos: atividades, vídeos, livros, sites, jogos e links.
-- Calendário escolar: eventos, reuniões, provas, feriados e formações.
-- BNCC e objetivos: biblioteca pessoal de códigos, habilidades e objetivos.
-- Ocorrências: registros pedagógicos/comportamentais por aluno.
-- Relatórios: contagem dos principais registros da rotina.
+Esta versão mantém o painel da professora e o cadastro visual inspirado no modelo enviado, com o cabeçalho como única parte configurável.
 
-## Segurança
-Os dados do painel usam o UID do Firebase. O Firestore permite que cada professora leia e grave apenas os próprios registros; o administrador principal e administradores autorizados podem consultar os dados quando necessário.
+## Correções principais
+- Login por e-mail/senha continua independente da consulta ao Firestore.
+- Cadastro por e-mail cria o usuário no Firebase Authentication primeiro.
+- Google entra pelo Firebase Authentication sem exigir uma leitura prévia do perfil para concluir a autenticação.
+- Erros do Firestore agora aparecem no aviso da tela com a mensagem retornada pelo Firebase.
+- A verificação do administrador usa o UID principal `BDmAQWzHytWVucAsuy4JiCOlIgB2`.
+- A regra da coleção `/admin/{uid}` evita avaliação recursiva.
+- O painel de configuração da professora foi redesenhado em 4 etapas: Dados pessoais, Turmas e disciplinas, Cabeçalho e Finalização.
+- O Pix continua opcional e nunca é requisito para criar ou usar a conta.
+- O modo demonstração não grava planos.
 
-## Demonstração
-O modo demonstração continua sem permissão para salvar planos ou registros do painel.
+## Firebase
+Publique o conteúdo de `firestore.rules` no Cloud Firestore > Regras.
 
-## Firestore
-As novas coleções usadas pelo painel são: `agenda`, `alunos`, `diario`, `frequencias`, `avaliacoes`, `materiais`, `eventos`, `bncc` e `ocorrencias`.
+No Firebase Authentication > Sign-in method, deixe **E-mail/senha** habilitado. Para o botão Google, habilite também **Google**.
 
-## Base da pesquisa de funcionalidades
-A estrutura foi ampliada com base em recursos recorrentes encontrados em plataformas e materiais de apoio ao professor: planejamento, diário, frequência, avaliações/notas, calendário, materiais, ocorrências, acompanhamento e relatórios.
+Em Authentication > Settings > Authorized domains, adicione o domínio publicado, por exemplo:
+- `planejaeducacao.netlify.app`
+- o novo domínio que estiver sendo usado
+
+Se aparecer `auth/too-many-requests`, aguarde o bloqueio temporário do Firebase terminar antes de testar novamente.
+
+## Admin
+UID principal configurado no código:
+`BDmAQWzHytWVucAsuy4JiCOlIgB2`
+
+A coleção `admin` pode conter o mesmo UID com:
+`role: "admin"`
+
+## Chave Pix
+Altere `PIX_KEY` em `app.js` somente se quiser exibir uma chave real. O bloco é opcional.

@@ -19,9 +19,31 @@ function setPlanDate(){$('pDate').value=new Date().toISOString().slice(0,10)}
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('loginForm').classList.toggle('hidden',b.dataset.tab!=='login');$('registerForm').classList.toggle('hidden',b.dataset.tab!=='register')}));
 
-async function isAdmin(user){if(user?.uid===ADMIN_UID)return true;try{const s=await getDoc(doc(db,'admin',user.uid));return s.exists()&&s.data().role==='admin'}catch(e){console.error(e);toast('Não foi possível consultar sua permissão administrativa. '+e.message,true);return false}}
-async function getTeacherProfile(uid){try{const s=await getDoc(doc(db,'professores',uid));return s.exists()?s.data():null}catch(e){console.error(e);return null}}
+async function isAdmin(user){
+  if(!user) return false;
+  if(user.uid===ADMIN_UID) return true;
+  try{
+    const s=await getDoc(doc(db,'admin',user.uid));
+    return s.exists() && s.data()?.role==='admin';
+  }catch(e){
+    console.error('Erro ao consultar /admin/UID:',e);
+    toast('Erro ao verificar a Área Admin: '+friendly(e),true);
+    return false;
+  }
+}
+async function getTeacherProfile(uid){
+  if(!uid) return null;
+  try{
+    const s=await getDoc(doc(db,'professores',uid));
+    return s.exists()?s.data():null;
+  }catch(e){
+    console.error('Erro ao consultar /professores/UID:',e);
+    toast('Erro ao consultar seus dados no Firestore: '+friendly(e),true);
+    return null;
+  }
+}
 async function enterUser(user){
+  $('demoMode').value='false';
   $('userLabel').textContent=user.displayName||user.email||'Usuário';
   $('logoutBtn').classList.remove('hidden');
   const admin=await isAdmin(user);
@@ -39,7 +61,7 @@ async function enterUser(user){
 }
 onAuthStateChanged(auth,user=>{if(user)enterUser(user);else{$('logoutBtn').classList.add('hidden');$('adminBtn').classList.add('hidden');show(views.login)}});
 
-$('loginBtn').onclick=async()=>{const email=$('email').value.trim(),pass=$('password').value;if(!email||!pass)return toast('Preencha e-mail e senha.',true);try{const r=await signInWithEmailAndPassword(auth,email,pass);await enterUser(r.user)}catch(e){console.error(e);toast('Não foi possível entrar: '+friendly(e),true)}};
+$('loginBtn').onclick=async()=>{const email=$('email').value.trim(),pass=$('password').value;if(!email||!pass)return toast('Preencha e-mail e senha.',true);try{await signInWithEmailAndPassword(auth,email,pass)}catch(e){console.error(e);toast('Não foi possível entrar: '+friendly(e),true)}};
 $('registerBtn').onclick=async()=>{
   const btn=$('registerBtn');
   const name=$('regName').value.trim(),email=$('regEmail').value.trim().toLowerCase(),p=$('regPassword').value,p2=$('regPassword2').value;
@@ -61,7 +83,6 @@ $('registerBtn').onclick=async()=>{
     }
     $('regPassword').value='';$('regPassword2').value='';
     toast('Conta criada com sucesso! Agora complete seu cadastro profissional.');
-    await enterUser(r.user);
   }catch(e){
     console.error('Erro ao criar conta:',e);
     toast('Não foi possível criar a conta: '+friendly(e),true);
@@ -70,17 +91,31 @@ $('registerBtn').onclick=async()=>{
   }
 };
 $('forgot').onclick=async()=>{const email=$('email').value.trim();if(!email)return toast('Digite seu e-mail primeiro.',true);try{await sendPasswordResetEmail(auth,email);toast('Link de redefinição enviado para seu e-mail.')}catch(e){toast('Não foi possível enviar: '+friendly(e),true)}};
-$('googleBtn').onclick=async()=>{try{const r=await signInWithPopup(auth,new GoogleAuthProvider());if(!await getDoc(doc(db,'professores',r.user.uid)).then(s=>s.exists()))await setDoc(doc(db,'professores',r.user.uid),{uid:r.user.uid,nome:r.user.displayName||'',email:r.user.email||'',criadoEm:serverTimestamp(),ativo:true,turmas:[],disciplinas:[],escola:'',modalidade:'Regular',cabecalhoTipo:'',cabecalhoTexto:'',acessoGratuito:false},{merge:true});await enterUser(r.user)}catch(e){toast('Login com Google não concluído: '+friendly(e),true)}};
+$('googleBtn').onclick=async()=>{
+  try{
+    const r=await signInWithPopup(auth,new GoogleAuthProvider());
+    try{
+      const ref=doc(db,'professores',r.user.uid);
+      const profile=await getDoc(ref);
+      if(!profile.exists()) await setDoc(ref,{uid:r.user.uid,nome:r.user.displayName||'',email:r.user.email||'',criadoEm:serverTimestamp(),ativo:true,turmas:[],disciplinas:[],escola:'',modalidade:'Regular',cabecalhoTipo:'',cabecalhoTexto:'',acessoGratuito:false,cadastroCompleto:false,provedor:'google'},{merge:true});
+    }catch(profileErr){
+      console.error('Google autenticado, mas o perfil não pôde ser consultado/criado:',profileErr);
+      toast('Google entrou, mas o Firestore recusou o perfil: '+friendly(profileErr),true);
+    }
+  }catch(e){console.error(e);toast('Não foi possível entrar com Google: '+friendly(e),true)}
+};
 $('googleRegisterBtn').onclick=async()=>{
   const btn=$('googleRegisterBtn');btn.disabled=true;btn.classList.add('loading');
   try{
     const r=await signInWithPopup(auth,new GoogleAuthProvider());
-    const ref=doc(db,'professores',r.user.uid);const profile=await getDoc(ref);
-    if(!profile.exists()){
-      try{await setDoc(ref,{uid:r.user.uid,nome:r.user.displayName||'',email:r.user.email||'',criadoEm:serverTimestamp(),ativo:true,turmas:[],disciplinas:[],escola:'',modalidade:'Regular',cabecalhoTipo:'',cabecalhoTexto:'',acessoGratuito:false,provedor:'google',cadastroCompleto:false},{merge:true})}catch(profileErr){console.error('Google autenticado, perfil pendente:',profileErr)}
-      toast('Conta criada com Google! Agora complete seu cadastro profissional.');
-    }else toast('Conta Google reconhecida. Entrando...');
-    await enterUser(r.user);
+    try{
+      const ref=doc(db,'professores',r.user.uid);
+      const profile=await getDoc(ref);
+      if(!profile.exists()) await setDoc(ref,{uid:r.user.uid,nome:r.user.displayName||'',email:r.user.email||'',criadoEm:serverTimestamp(),ativo:true,turmas:[],disciplinas:[],escola:'',modalidade:'Regular',cabecalhoTipo:'',cabecalhoTexto:'',acessoGratuito:false,provedor:'google',cadastroCompleto:false},{merge:true});
+    }catch(profileErr){
+      console.error('Google autenticado, perfil pendente:',profileErr);
+      toast('Conta Google autenticada. O Firestore recusou o perfil: '+friendly(profileErr),true);
+    }
   }catch(e){console.error(e);toast('Não foi possível criar a conta com Google: '+friendly(e),true)}
   finally{btn.disabled=false;btn.classList.remove('loading')}
 };
@@ -102,7 +137,17 @@ function fillOnboarding(profile,user){
   document.querySelectorAll('.on-subject').forEach(c=>c.checked=(profile?.disciplinas||[]).includes(c.value));
   $('pixKeyDisplay').textContent=PIX_KEY&&PIX_KEY!=='COLOQUE_SUA_CHAVE_PIX_AQUI'?PIX_KEY:'Configure sua chave Pix no app.js';
   $('copyPixBtn').disabled=!PIX_KEY||PIX_KEY==='COLOQUE_SUA_CHAVE_PIX_AQUI';
+  updateHeaderPreview();
 }
+function updateHeaderPreview(){
+  const v=$('onHeaderType')?.value||'';
+  const label=HEADER_LABELS[v]||'Selecione um modelo de cabeçalho';
+  const preview=$('onHeaderPreview');
+  if(!preview)return;
+  preview.innerHTML=`<strong>${esc(label)}</strong><small>${v?'Pré-visualização do cabeçalho institucional':'O cabeçalho escolhido aparecerá aqui nos seus planos'}</small>`;
+}
+$('onHeaderType').addEventListener('change',updateHeaderPreview);
+$('backOnboardingBtn').onclick=()=>{show(views.login);document.querySelector('[data-tab="login"]')?.click()};
 
 $('copyPixBtn').onclick=async()=>{if(!PIX_KEY||PIX_KEY==='COLOQUE_SUA_CHAVE_PIX_AQUI')return toast('Configure sua chave Pix no app.js para liberar a cópia.',true);try{await navigator.clipboard.writeText(PIX_KEY);toast('Chave Pix copiada.');}catch(e){toast('Não foi possível copiar automaticamente.',true)}};
 $('continueOnboardingBtn').onclick=async()=>{
