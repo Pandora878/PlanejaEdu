@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PlanejaEdu — Configuração da professora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+.form-shell{max-width:1180px;margin:0 auto}.form-card{background:#fff;border:1px solid #e5e7f1;border-radius:24px;box-shadow:0 18px 50px rgba(27,36,80,.08);overflow:hidden}.stepbar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:22px 28px;border-bottom:1px solid #ececf3;background:#fcfcff}.step{display:flex;align-items:center;gap:10px;color:#8b91a3;font-size:12px;font-weight:700}.step .num{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;border:1px solid #dfe1ec;background:#fff}.step.active{color:#5439e8}.step.active .num{background:#6547ee;color:#fff;border-color:#6547ee}.section{padding:26px 28px;border-bottom:1px solid #ececf3}.section:last-child{border-bottom:0}.section-title{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}.section-icon{width:38px;height:38px;border-radius:12px;background:#f0edff;color:#5f45e9;display:grid;place-items:center;flex:none}.section-title h2{font-size:18px;margin:0 0 4px}.section-title p{margin:0;color:#858da2;font-size:12px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.field{grid-column:span 4}.field.wide{grid-column:span 8}.field.full{grid-column:1/-1}.field label{display:block;font-size:11px;font-weight:800;margin:0 0 7px}.field input,.field select,.field textarea{width:100%;border:1px solid #dce0ec;border-radius:10px;padding:12px 13px;outline:0;background:#fff;color:#202943;font:inherit;font-size:13px}.field textarea{min-height:90px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:#735cff;box-shadow:0 0 0 3px #735cff18}.choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.choice-grid.two{grid-template-columns:repeat(2,1fr)}.choice{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:1px solid #dce0ec;border-radius:10px;background:#fff;padding:8px 10px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:#3c465f}.choice input{accent-color:#5f45e9;width:16px;height:16px;flex:none}.choice:has(input:checked){border-color:#6547ee;background:#f3f0ff;color:#4e37d6;box-shadow:0 0 0 1px #6547ee}.choice-group{margin-top:17px}.choice-group:first-child{margin-top:0}.group-label{font-size:11px;font-weight:800;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between}.link-btn{border:0;background:none;color:#5d43e7;font-weight:700;font-size:11px;cursor:pointer}.header-layout{display:grid;grid-template-columns:1fr 1.15fr;gap:16px;align-items:stretch}.preview{border:1px dashed #cfd3e4;border-radius:16px;padding:18px;background:#fafaff;min-height:150px;display:flex;align-items:center;justify-content:center;text-align:center}.preview-box{background:#fff;border:1px solid #e3e5ee;border-radius:12px;padding:16px;width:100%;font-size:12px}.preview-box strong{display:block;font-size:13px;margin-bottom:5px}.preview-box span{display:block;color:#737c92;font-size:10px}.header-selected{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.header-chip{display:inline-flex;align-items:center;gap:6px;background:#eeeaff;color:#5139dc;border-radius:999px;padding:6px 9px;font-size:10px;font-weight:700}.pix{background:linear-gradient(135deg,#f5f1ff,#fbfaff);border:1px solid #ddd7ff;border-radius:16px;padding:18px}.pix-top{display:flex;gap:12px;align-items:flex-start}.pix-icon{width:38px;height:38px;border-radius:11px;background:#6547ee;color:#fff;display:grid;place-items:center}.pix h3{margin:0 0 4px;font-size:14px}.pix p{margin:0;color:#70798e;font-size:11px;line-height:1.5}.pix-actions{display:flex;gap:10px;align-items:center;margin-top:13px}.pix-key{flex:1;background:#fff;border:1px solid #dddfea;border-radius:9px;padding:11px 12px;font-size:12px}.secondary{background:#fff;border:1px solid #d9dced;color:#26304a;border-radius:9px;padding:11px 14px;font-weight:700}.success-badge{display:none;align-items:center;gap:6px;background:#e5f8ef;color:#148257;border-radius:999px;padding:7px 10px;font-size:10px;font-weight:800}.success-badge.show{display:inline-flex}.footer-actions{display:flex;justify-content:space-between;gap:12px;padding:20px 28px;background:#fcfcff;border-top:1px solid #ececf3}.btn{border:0;border-radius:10px;padding:12px 18px;font-weight:800;cursor:pointer}.btn.primary{background:#6547ee;color:#fff}.btn.secondary{background:#fff;border:1px solid #dfe2ed;color:#36405a}.dev-note{margin-top:16px;padding:12px 14px;border-radius:12px;background:#fff7e8;border:1px solid #f0ddb6;color:#795b1e;font-size:11px}.small-muted{color:#858da2;font-size:10px;margin-top:6px}
+@media(max-width:900px){.main{padding:28px 18px}.stepbar{grid-template-columns:repeat(2,1fr)}.header-layout{grid-template-columns:1fr}.choice-grid{grid-template-columns:repeat(2,1fr)}.field,.field.wide{grid-column:span 6}.field.full{grid-column:1/-1}}
+@media(max-width:600px){.section,.stepbar,.footer-actions{padding:18px}.choice-grid,.choice-grid.two{grid-template-columns:1fr}.field,.field.wide{grid-column:1/-1}.pix-actions{flex-direction:column;align-items:stretch}.form-shell{width:100%}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+<div class="brand"><div class="brand-icon"><i></i><i></i><i></i></div><div><b>Planeja<span>Edu</span></b><small>Gestão pedagógica inteligente</small></div></div>
+<nav>
+<a href="index.html"><i data-lucide="layout-dashboard"></i>Visão geral</a>
+<a href="professores.html"><i data-lucide="users"></i>Professores</a>
+<a href="formularios.html"><i data-lucide="inbox"></i>Formulários recebidos</a>
+<a href="escolas.html"><i data-lucide="school"></i>Escolas</a>
+<a href="turmas.html"><i data-lucide="layers-3"></i>Turmas</a>
+<a href="disciplinas.html"><i data-lucide="book-open"></i>Disciplinas</a>
+<a href="cabecalhos.html"><i data-lucide="file-text"></i>Cabeçalhos</a>
+<a href="planos.html"><i data-lucide="notebook-tabs"></i>Planos de aula</a>
+<a class="active" href="professora.html"><i data-lucide="user-round-cog"></i>Configuração da professora</a>
+<a href="configuracoes.html"><i data-lucide="settings"></i>Configurações</a>
+</nav><div class="bottom"><button onclick="logout()">Sair</button></div>
+</aside>
+<main class="main"><header><div><span class="eyebrow">CONFIGURAÇÃO DA PROFESSORA</span><h1>Vamos preparar seu espaço?</h1><p>Cadastre os dados da professora, vínculos, turmas, disciplinas e cabeçalhos.</p></div><div class="profile"><i data-lucide="shield-check"></i> Administrador</div></header>
+<div class="form-shell"><div class="form-card">
+<div class="stepbar"><div class="step active"><span class="num">1</span><span>Dados pessoais</span></div><div class="step"><span class="num">2</span><span>Turmas e disciplinas</span></div><div class="step"><span class="num">3</span><span>Cabeçalhos</span></div><div class="step"><span class="num">4</span><span>Finalização</span></div></div>
+<section class="section"><div class="section-title"><div class="section-icon"><i data-lucide="user-round"></i></div><div><h2>1. Dados pessoais</h2><p>Preencha as informações para identificarmos seu perfil.</p></div></div>
+<div class="grid">
+<div class="field wide"><label>Nome completo *</label><input value="Júlia Cardoso" placeholder="Seu nome completo"></div>
+<div class="field"><label>WhatsApp *</label><input placeholder="(49) 99999-9999"></div>
+<div class="field"><label>Rede de ensino *</label><select><option>Municipal</option><option>Estadual</option><option>Particular</option><option>Outro</option></select></div>
+<div class="field wide"><label>Escola / instituição *</label><select><option>Escola Municipal Professora Irmã Blandina Cisz</option><option>Escola Estadual</option><option>Escola Particular</option><option>Outra escola</option></select></div>
+<div class="field"><label>Cidade *</label><input value="Lajeado Grande"></div>
+<div class="field"><label>Estado *</label><select><option>SC</option><option>PR</option><option>RS</option><option>Outro</option></select></div>
+<div class="field"><label>Modalidade de ensino *</label><select><option>Regular</option><option>Integral</option><option>Especial</option><option>Outro</option></select></div>
+<div class="field wide"><label>Função *</label><select><option>Professora</option><option>Coordenadora</option><option>Diretora</option><option>Supervisora</option><option>Outra</option></select></div>
+</div></section>
+<section class="section"><div class="section-title"><div class="section-icon"><i data-lucide="users-round"></i></div><div><h2>2. Turmas e disciplinas</h2><p>Selecione uma ou várias opções. As caixas ficam centralizadas para facilitar o uso.</p></div></div>
+<div class="choice-group"><div class="group-label">Turmas <button class="link-btn" type="button" onclick="toggleAll('.turma')">Selecionar todas</button></div><div class="choice-grid" id="turmas">
+<label class="choice"><input class="turma" type="checkbox">Educação Infantil</label><label class="choice"><input class="turma" type="checkbox">Pré I</label><label class="choice"><input class="turma" type="checkbox">Pré II</label><label class="choice"><input class="turma" type="checkbox">1º ano</label><label class="choice"><input class="turma" type="checkbox">2º ano</label><label class="choice"><input class="turma" type="checkbox">3º ano</label><label class="choice"><input class="turma" type="checkbox">4º ano</label><label class="choice"><input class="turma" type="checkbox">5º ano</label>
+</div></div>
+<div class="choice-group"><div class="group-label">Atalhos por etapa</div><div class="choice-grid">
+<label class="choice"><input type="checkbox" onchange="toggleGroup(this,'fundamental')">Ensino Fundamental — todas as turmas</label>
+<label class="choice"><input type="checkbox" onchange="toggleGroup(this,'medio')">Ensino Médio — todas as turmas</label>
+<label class="choice"><input type="checkbox" onchange="toggleGroup(this,'maternal')">Maternal — todas as turmas</label>
+</div><div class="small-muted">Ao marcar uma etapa, todas as turmas correspondentes são selecionadas. Você pode ajustar depois individualmente.</div></div>
+<div class="choice-group"><div class="group-label">Disciplinas <button class="link-btn" type="button" onclick="toggleAll('.disciplina')">Selecionar todas</button></div><div class="choice-grid two">
+<label class="choice"><input class="disciplina" type="checkbox">Português</label><label class="choice"><input class="disciplina" type="checkbox">Matemática</label><label class="choice"><input class="disciplina" type="checkbox">Ciências</label><label class="choice"><input class="disciplina" type="checkbox">História</label><label class="choice"><input class="disciplina" type="checkbox">Geografia</label><label class="choice"><input class="disciplina" type="checkbox">Ensino Religioso</label><label class="choice"><input class="disciplina" type="checkbox">Arte</label><label class="choice"><input class="disciplina" type="checkbox">Educação Física</label><label class="choice"><input class="disciplina" type="checkbox">Projetos interdisciplinares</label><label class="choice"><input class="disciplina" type="checkbox" id="outraDisc">Outra</label>
+</div><div id="customDisc" style="display:none;margin-top:10px"><input class="field-input" id="customDiscInput" placeholder="Digite a disciplina que realiza" style="width:100%;border:1px solid #dce0ec;border-radius:10px;padding:12px;font:inherit"></div></div>
+</section>
+<section class="section"><div class="section-title"><div class="section-icon"><i data-lucide="file-text"></i></div><div><h2>3. Cabeçalho institucional</h2><p>Você pode selecionar mais de um modelo e escolher qual será usado em cada plano.</p></div></div>
+<div class="header-layout"><div><div class="field full"><label>Modelos de cabeçalho *</label><select id="headerSelect"><option value="">Selecione</option><option value="municipal">Escola Municipal — Irmã Blandina</option><option value="estadual">Escola Estadual</option><option value="particular">Escola Particular</option><option value="secretaria">Irmã Blandina</option><option value="integral">Integral (Lajeado Grande)</option></select></div><button type="button" class="btn secondary" style="margin-top:10px" onclick="addHeader()"><i data-lucide="plus"></i> Adicionar cabeçalho</button><div class="header-selected" id="selectedHeaders"></div></div><div class="preview"><div class="preview-box"><strong id="previewTitle">Pré-visualização do cabeçalho</strong><span id="previewText">O modelo selecionado aparecerá nos seus planos de aula.</span></div></div></div>
+</section>
+<section class="section"><div class="section-title"><div class="section-icon"><i data-lucide="heart-handshake"></i></div><div><h2>4. Apoio ao PlanejaEdu</h2><p>A contribuição é opcional. A opção para não contribuir aparece sempre.</p></div></div>
+<div class="pix"><div class="pix-top"><div class="pix-icon"><i data-lucide="qr-code"></i></div><div><h3>Se quiser ajudar</h3><p>O PlanejaEdu é um projeto feito com carinho para apoiar o trabalho dos professores. Se quiser contribuir, o Pix é opcional e não é necessário para usar a plataforma.</p></div></div><div class="pix-actions"><div class="pix-key">Chave Pix: <strong>(49) 99967-4823</strong></div><button class="secondary" type="button" onclick="copyPix()"><i data-lucide="copy"></i> Copiar chave</button><button class="secondary" type="button" onclick="declinePix()">Não, obrigado</button></div><div id="supportBadge" class="success-badge"><i data-lucide="badge-check"></i> Apoiadora do PlanejaEdu</div></div>
+<div class="dev-note"><strong>Para a dev:</strong> novas opções de rede/escola ou cabeçalho podem ser adicionadas pela Área Admin, sem alterar esta estrutura.</div>
+</section>
+<div class="footer-actions"><button class="btn secondary" type="button" onclick="history.back()"><i data-lucide="arrow-left"></i> Voltar</button><button class="btn primary" type="button" onclick="finishForm()">Continuar <i data-lucide="arrow-right"></i></button></div>
+</div></div></main></div>
+<script>
+const headerNames={municipal:'Escola Municipal — Irmã Blandina',estadual:'Escola Estadual',particular:'Escola Particular',secretaria:'Irmã Blandina',integral:'Integral (Lajeado Grande)'};
+function toggleAll(sel){const boxes=[...document.querySelectorAll(sel)];const shouldCheck=boxes.some(b=>!b.checked);boxes.forEach(b=>b.checked=shouldCheck)}
+function toggleGroup(source,group){
+  const sets={
+    fundamental:['1º ano','2º ano','3º ano','4º ano','5º ano','6º ano','7º ano','8º ano','9º ano'],
+    medio:['1º ano do Ensino Médio','2º ano do Ensino Médio','3º ano do Ensino Médio'],
+    maternal:['Maternal I','Maternal II']
+  };
+  (sets[group]||[]).forEach(name=>{
+    if(source.checked) addDynamicTurma(name);
+    else removeDynamicTurma(name);
+  });
+}
+function addDynamicTurma(name){
+  if([...document.querySelectorAll('.turma')].some(x=>x.parentElement.textContent.trim()===name))return;
+  const label=document.createElement('label');label.className='choice';
+  label.innerHTML='<input class=\"turma\" type=\"checkbox\">'+name;
+  document.getElementById('turmas').appendChild(label);
+  label.querySelector('input').checked=true;
+}
+function removeDynamicTurma(name){
+  const b=[...document.querySelectorAll('.turma')].find(x=>x.parentElement.textContent.trim()===name);
+  if(b)b.parentElement.remove();
+}
+function addHeader(){const select=document.getElementById('headerSelect');const value=select.value;if(!value)return;const wrap=document.getElementById('selectedHeaders');if([...wrap.querySelectorAll('[data-value]')].some(x=>x.dataset.value===value))return;const chip=document.createElement('span');chip.className='header-chip';chip.dataset.value=value;chip.innerHTML='<i data-lucide="check"></i>'+headerNames[value]+' <button type="button" aria-label="Remover" onclick="this.parentElement.remove()" style="border:0;background:none;color:inherit;cursor:pointer">×</button>';wrap.appendChild(chip);lucide.createIcons();document.getElementById('previewTitle').textContent=headerNames[value];document.getElementById('previewText').textContent='Pré-visualização do modelo institucional selecionado.'}
+document.getElementById('headerSelect').addEventListener('change',()=>{const v=document.getElementById('headerSelect').value;if(v){document.getElementById('previewTitle').textContent=headerNames[v];document.getElementById('previewText').textContent='Este é o modelo que será utilizado nos seus planos de aula.'}});
+document.getElementById('outraDisc').addEventListener('change',e=>document.getElementById('customDisc').style.display=e.target.checked?'block':'none');
+function copyPix(){navigator.clipboard?.writeText('(49) 99967-4823');document.getElementById('supportBadge').classList.add('show');lucide.createIcons()}
+function declinePix(){document.getElementById('supportBadge').classList.remove('show')}
+function finishForm(){alert('Configuração pronta para ser enviada à administração.');}
+function logout(){location.href='index.html'}
+lucide.createIcons();
+</script>
+</body></html>
