@@ -40,10 +40,50 @@ async function enterUser(user){
 onAuthStateChanged(auth,user=>{if(user)enterUser(user);else{$('logoutBtn').classList.add('hidden');$('adminBtn').classList.add('hidden');show(views.login)}});
 
 $('loginBtn').onclick=async()=>{const email=$('email').value.trim(),pass=$('password').value;if(!email||!pass)return toast('Preencha e-mail e senha.',true);try{const r=await signInWithEmailAndPassword(auth,email,pass);await enterUser(r.user)}catch(e){console.error(e);toast('Não foi possível entrar: '+friendly(e),true)}};
-$('registerBtn').onclick=async()=>{const name=$('regName').value.trim(),email=$('regEmail').value.trim(),p=$('regPassword').value,p2=$('regPassword2').value;if(!name||!email||p.length<6||p!==p2)return toast('Confira nome, e-mail e senhas.',true);try{const r=await createUserWithEmailAndPassword(auth,email,p);await updateProfile(r.user,{displayName:name});await setDoc(doc(db,'professores',r.user.uid),{uid:r.user.uid,nome:name,email,criadoEm:serverTimestamp(),ativo:true,turmas:[],disciplinas:[],escola:'',modalidade:'Regular',cabecalhoTipo:'',cabecalhoTexto:'',acessoGratuito:false,cadastroCompleto:false},{merge:true});toast('Conta criada! Agora complete seu cadastro profissional.');await enterUser(r.user)}catch(e){console.error(e);toast('Não foi possível criar a conta: '+friendly(e),true)}};
+$('registerBtn').onclick=async()=>{
+  const btn=$('registerBtn');
+  const name=$('regName').value.trim(),email=$('regEmail').value.trim().toLowerCase(),p=$('regPassword').value,p2=$('regPassword2').value;
+  if(!name||!email||!p||!p2)return toast('Preencha todos os campos para criar sua conta.',true);
+  if(!/^\S+@\S+\.\S+$/.test(email))return toast('Digite um e-mail válido.',true);
+  if(p.length<6)return toast('A senha precisa ter pelo menos 6 caracteres.',true);
+  if(p!==p2)return toast('As senhas não coincidem.',true);
+  btn.disabled=true;btn.classList.add('loading');btn.innerHTML='<span class="spinner"></span> Criando sua conta...';
+  try{
+    const r=await createUserWithEmailAndPassword(auth,email,p);
+    try{await updateProfile(r.user,{displayName:name})}catch(profileErr){console.warn('Não foi possível atualizar o nome agora:',profileErr)}
+    // A criação do usuário no Authentication é independente do perfil no Firestore.
+    // Assim, um problema temporário de permissão/índice não faz parecer que a conta não foi criada.
+    try{
+      await setDoc(doc(db,'professores',r.user.uid),{uid:r.user.uid,nome:name,email,criadoEm:serverTimestamp(),ativo:true,turmas:[],disciplinas:[],escola:'',modalidade:'Regular',cabecalhoTipo:'',cabecalhoTexto:'',acessoGratuito:false,cadastroCompleto:false,provedor:'senha'},{merge:true});
+    }catch(profileErr){
+      console.error('Conta criada, mas perfil não foi gravado no Firestore:',profileErr);
+      toast('Conta criada. Vamos concluir seu cadastro; se aparecer um erro do Firestore, ele será mostrado.',true);
+    }
+    $('regPassword').value='';$('regPassword2').value='';
+    toast('Conta criada com sucesso! Agora complete seu cadastro profissional.');
+    await enterUser(r.user);
+  }catch(e){
+    console.error('Erro ao criar conta:',e);
+    toast('Não foi possível criar a conta: '+friendly(e),true);
+  }finally{
+    btn.disabled=false;btn.classList.remove('loading');btn.innerHTML='Criar minha conta <span>→</span>';
+  }
+};
 $('forgot').onclick=async()=>{const email=$('email').value.trim();if(!email)return toast('Digite seu e-mail primeiro.',true);try{await sendPasswordResetEmail(auth,email);toast('Link de redefinição enviado para seu e-mail.')}catch(e){toast('Não foi possível enviar: '+friendly(e),true)}};
 $('googleBtn').onclick=async()=>{try{const r=await signInWithPopup(auth,new GoogleAuthProvider());if(!await getDoc(doc(db,'professores',r.user.uid)).then(s=>s.exists()))await setDoc(doc(db,'professores',r.user.uid),{uid:r.user.uid,nome:r.user.displayName||'',email:r.user.email||'',criadoEm:serverTimestamp(),ativo:true,turmas:[],disciplinas:[],escola:'',modalidade:'Regular',cabecalhoTipo:'',cabecalhoTexto:'',acessoGratuito:false},{merge:true});await enterUser(r.user)}catch(e){toast('Login com Google não concluído: '+friendly(e),true)}};
-$('googleRegisterBtn').onclick=async()=>{try{const r=await signInWithPopup(auth,new GoogleAuthProvider());const ref=doc(db,'professores',r.user.uid);const profile=await getDoc(ref);if(!profile.exists()){await setDoc(ref,{uid:r.user.uid,nome:r.user.displayName||'',email:r.user.email||'',criadoEm:serverTimestamp(),ativo:true,turmas:[],disciplinas:[],escola:'',modalidade:'Regular',cabecalhoTipo:'',cabecalhoTexto:'',acessoGratuito:false,provedor:'google',cadastroCompleto:false},{merge:true});toast('Conta criada com Google! Agora complete seu cadastro profissional.')}else{toast('Conta Google reconhecida. Entrando...')}await enterUser(r.user)}catch(e){console.error(e);toast('Não foi possível criar a conta com Google: '+friendly(e),true)}};
+$('googleRegisterBtn').onclick=async()=>{
+  const btn=$('googleRegisterBtn');btn.disabled=true;btn.classList.add('loading');
+  try{
+    const r=await signInWithPopup(auth,new GoogleAuthProvider());
+    const ref=doc(db,'professores',r.user.uid);const profile=await getDoc(ref);
+    if(!profile.exists()){
+      try{await setDoc(ref,{uid:r.user.uid,nome:r.user.displayName||'',email:r.user.email||'',criadoEm:serverTimestamp(),ativo:true,turmas:[],disciplinas:[],escola:'',modalidade:'Regular',cabecalhoTipo:'',cabecalhoTexto:'',acessoGratuito:false,provedor:'google',cadastroCompleto:false},{merge:true})}catch(profileErr){console.error('Google autenticado, perfil pendente:',profileErr)}
+      toast('Conta criada com Google! Agora complete seu cadastro profissional.');
+    }else toast('Conta Google reconhecida. Entrando...');
+    await enterUser(r.user);
+  }catch(e){console.error(e);toast('Não foi possível criar a conta com Google: '+friendly(e),true)}
+  finally{btn.disabled=false;btn.classList.remove('loading')}
+};
 $('logoutBtn').onclick=()=>signOut(auth);
 $('demoBtn').onclick=()=>{toast('Modo demonstração: os planos criados aqui NÃO são salvos.');show(views.new);setPlanDate();$('demoMode').value='true';document.querySelectorAll('#newPlanView input,#newPlanView textarea').forEach(x=>x.value='')};
 
@@ -120,5 +160,5 @@ document.addEventListener('change',e=>{if(e.target.id==='teacherEditHeaderType')
 $('saveTeacherBtn').onclick=async()=>{const uid=$('teacherEditUid').value.trim();if(!uid)return;const turmas=[...document.querySelectorAll('.assign-grade:checked')].map(c=>c.value);const disciplinas=[...document.querySelectorAll('.assign-subject:checked')].map(c=>c.value);const payload={nome:$('teacherEditName').value.trim(),email:$('teacherEditEmail').value.trim(),escola:$('teacherEditSchool').value.trim(),modalidade:$('teacherEditMode').value,cabecalhoTipo:$('teacherEditHeaderType').value,cabecalhoTexto:HEADER_LABELS[$('teacherEditHeaderType').value]||$('teacherEditHeader').value.trim(),acessoGratuito:$('teacherEditFree').checked,ativo:$('teacherEditActive').checked,turmas,disciplinas,uid,atualizadoEm:serverTimestamp()};try{await setDoc(doc(db,'professores',uid),payload,{merge:true});toast('Dados da professora atualizados.');$('teacherModal').classList.add('hidden');loadAdminData()}catch(e){console.error(e);toast('Não foi possível salvar: '+e.message,true)}};
 $('closeAdminTeacherFromView').onclick=()=>{$('teacherModal').classList.add('hidden')};
 
-function friendly(e){return ({'auth/invalid-credential':'E-mail ou senha incorretos.','auth/invalid-email':'E-mail inválido.','auth/user-not-found':'Usuário não encontrado.','auth/wrong-password':'Senha incorreta.','auth/email-already-in-use':'Este e-mail já possui uma conta.','auth/too-many-requests':'Muitas tentativas. Aguarde alguns minutos e tente novamente.','auth/operation-not-allowed':'O método de login ainda não está habilitado no Firebase.','auth/popup-closed-by-user':'A janela do Google foi fechada antes de concluir.','auth/popup-blocked':'O navegador bloqueou a janela do Google. Permita pop-ups para este site.','auth/unauthorized-domain':'Este domínio ainda não está autorizado no Firebase Authentication. Adicione o domínio publicado em Authentication > Settings > Authorized domains.','auth/account-exists-with-different-credential':'Já existe uma conta com este e-mail usando outro método de login. Entre pelo método original ou vincule o Google à conta.'})[e.code]||e.message||'Erro desconhecido.'}
+function friendly(e){return ({'auth/invalid-credential':'E-mail ou senha incorretos.','auth/invalid-email':'E-mail inválido.','auth/user-not-found':'Usuário não encontrado.','auth/wrong-password':'Senha incorreta.','auth/email-already-in-use':'Este e-mail já possui uma conta.','auth/too-many-requests':'Muitas tentativas. Aguarde alguns minutos e tente novamente.','auth/operation-not-allowed':'O método de login ainda não está habilitado no Firebase.','auth/popup-closed-by-user':'A janela do Google foi fechada antes de concluir.','auth/popup-blocked':'O navegador bloqueou a janela do Google. Permita pop-ups para este site.','auth/unauthorized-domain':'Este domínio ainda não está autorizado no Firebase Authentication. Adicione o domínio publicado em Authentication > Settings > Authorized domains.','auth/account-exists-with-different-credential':'Já existe uma conta com este e-mail usando outro método de login. Entre pelo método original ou vincule o Google à conta.','auth/password-does-not-meet-requirements':'A senha não atende aos requisitos definidos no Firebase.','auth/network-request-failed':'Falha de conexão. Verifique sua internet e tente novamente.','auth/internal-error':'O Firebase retornou um erro interno. Tente novamente em alguns segundos.','auth/invalid-api-key':'A chave da configuração do Firebase é inválida. Verifique a configuração do projeto.','auth/app-not-authorized':'Este aplicativo não está autorizado a usar o Firebase Authentication.','auth/user-disabled':'Esta conta foi desativada pelo administrador.'})[e.code]||e.message||'Erro desconhecido.'}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
