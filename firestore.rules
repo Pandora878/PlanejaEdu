@@ -40,6 +40,12 @@ service cloud.firestore {
         (resource.data.uid == request.auth.uid || isAdmin());
     }
 
+    match /solicitacoes_professoras/{uid} {
+      allow create, update: if isOwner(uid);
+      allow read: if isAdmin() || isOwner(uid);
+      allow delete: if isAdmin() || isOwner(uid);
+    }
+
     match /configuracoes/{id} {
       allow read: if signedIn();
       allow write: if isAdmin();

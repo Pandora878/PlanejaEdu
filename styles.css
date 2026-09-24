@@ -21,3 +21,27 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:
 @media(max-width:560px){.checks{grid-template-columns:1fr}.admin-page{padding:30px 16px 70px}}
 
 .google-mark{display:inline-grid;place-items:center;width:22px;height:22px;font-weight:800;font-size:16px;color:#4285f4}.google-help{margin:9px 0 0;text-align:center;color:#7a849e;font-size:12px;line-height:1.45}
+/* Cadastro profissional + apoio opcional via Pix */
+.onboarding-page{min-height:calc(100vh - 72px);padding:46px 24px 90px;background:radial-gradient(circle at 15% 10%,#f0eeff 0,transparent 34%),#f7f8fd}
+.onboarding-shell{max-width:1060px;margin:auto}
+.onboarding-head{text-align:center;max-width:760px;margin:0 auto 28px}
+.onboarding-head h1{font:800 38px "Plus Jakarta Sans";letter-spacing:-1.5px;margin:7px 0 10px;color:var(--ink)}
+.onboarding-head p{color:var(--muted);line-height:1.65;margin:0 auto}
+.step-pills{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:20px}
+.step-pills span{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;color:#8991a6;font-size:11px;font-weight:800}
+.step-pills span.active{background:#efedff;border-color:#dcd7ff;color:var(--purple)}
+.onboarding-card{background:#fff;border:1px solid #e7e9f1;border-radius:28px;box-shadow:0 25px 70px rgba(35,40,75,.09);overflow:hidden}
+.onboarding-section{padding:30px 34px;border-bottom:1px solid var(--line)}
+.onboarding-section h2{font:800 20px "Plus Jakarta Sans";margin:0 0 6px}
+.onboarding-section>.muted{margin:0 0 14px}
+.onboarding-check-group{margin-top:20px}.onboarding-check-group>b{font-size:12px;color:#38425c;display:block;margin-bottom:9px}.onboarding-checks{grid-template-columns:repeat(3,1fr)}
+.pix-support{margin:26px 34px 0;padding:22px;border:1px solid #e3defe;border-radius:20px;background:linear-gradient(135deg,#faf9ff,#f2efff);display:flex;gap:18px;align-items:flex-start}
+.pix-icon{flex:0 0 52px;height:52px;border-radius:15px;display:grid;place-items:center;background:#5b4be7;color:#fff;font-weight:900;letter-spacing:-.5px;box-shadow:0 10px 24px rgba(91,75,231,.22)}
+.pix-copy h3{font:800 18px "Plus Jakarta Sans";margin:4px 0 5px}.pix-copy p{margin:0;color:#626c84;font-size:13px;line-height:1.55}.pix-copy strong{color:#313a55}
+.pix-key-row{margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.pix-key-row span{background:#fff;border:1px solid #e2e4ec;border-radius:10px;padding:10px 12px;font-size:11px;font-weight:700;color:#48516a;word-break:break-all;flex:1}
+.onboarding-actions{padding:22px 34px;display:flex;justify-content:flex-end;background:#fcfcfe}.onboarding-actions .btn{min-width:190px}
+.admin-requests-toolbar{margin-top:48px}.requests-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.request-card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 10px 30px rgba(31,36,65,.05)}
+.request-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.request-head h3{margin:0;font:800 18px "Plus Jakarta Sans"}.request-head p{margin:4px 0 0;color:var(--muted);font-size:12px}.request-status{font-size:10px;font-weight:800;text-transform:uppercase;background:#fff2cf;color:#8a6400;border-radius:999px;padding:7px 9px}
+.request-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.request-grid div{background:#f7f8fc;border:1px solid #eceef4;border-radius:12px;padding:11px}.request-grid b,.request-grid span{display:block}.request-grid b{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#8a91a5;margin-bottom:4px}.request-grid span{font-size:12px;color:#35405c;line-height:1.4;word-break:break-word}
+@media(max-width:900px){.onboarding-checks,.requests-grid{grid-template-columns:1fr 1fr}.pix-support{margin-left:20px;margin-right:20px}.onboarding-section{padding:25px 20px}.onboarding-actions{padding:18px 20px}}
+@media(max-width:560px){.onboarding-page{padding:28px 14px 70px}.onboarding-head h1{font-size:30px}.onboarding-checks,.requests-grid,.request-grid{grid-template-columns:1fr}.pix-support{margin-left:14px;margin-right:14px;flex-direction:column}.onboarding-actions{justify-content:stretch}.onboarding-actions .btn{width:100%}}

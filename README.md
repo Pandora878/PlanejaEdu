@@ -58,3 +58,14 @@ A interface não é a segurança. A autorização real é feita pelas regras do 
 A tela **Criar conta** agora possui o botão **Criar conta com Google**. Ele usa o Google Provider do Firebase Authentication e cria automaticamente o documento da professora em `professores/{UID}` na primeira entrada.
 
 No Firebase, ative **Authentication > Sign-in method > Google** e confira se o domínio publicado está em **Authorized domains**. O Firebase documenta o uso de `GoogleAuthProvider` com `signInWithPopup` para Web.
+
+
+## Cadastro profissional e Pix opcional
+
+Após criar a conta por e-mail ou Google, a professora é direcionada para um formulário profissional. O formulário registra escola, rede de ensino, cidade/estado, modalidade, função, turmas, disciplinas, cabeçalho e observações.
+
+Os dados são gravados em `professores/{UID}` e uma cópia da solicitação fica em `solicitacoes_professoras/{UID}` para a Área Admin.
+
+O Pix é **opcional**: a contribuição não bloqueia cadastro, login, criação de planos ou acesso à plataforma. Para configurar a chave, altere `PIX_KEY` no início de `app.js`.
+
+Depois de publicar, atualize as regras do Firestore usando o arquivo `firestore.rules`.

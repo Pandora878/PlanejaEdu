@@ -4,12 +4,15 @@ import { getFirestore, doc, getDoc, setDoc, addDoc, collection, query, where, ge
 
 const firebaseConfig={apiKey:"AIzaSyCAoPpo30vk_aWjLRJPm1D55U10r25hr00",authDomain:"planejaeducaaaa.firebaseapp.com",projectId:"planejaeducaaaa",storageBucket:"planejaeducaaaa.firebasestorage.app",messagingSenderId:"619532705806",appId:"1:619532705806:web:dcb28fc66b8675298e1c5f",measurementId:"G-FJFKHN7W8J"};
 const ADMIN_UID="BDmAQWzHytWVucAsuy4JiCOlIgB2";
+// Configure aqui a sua chave Pix. A contribuição é opcional e nunca bloqueia o cadastro.
+const PIX_KEY="COLOQUE_SUA_CHAVE_PIX_AQUI";
+const HEADER_LABELS={creche:"Cabeçalho institucional",escola:"Cabeçalho ESCOLA PROJETO",escola_integral:"Cabeçalho ESCOLA PROJETO INTEGRAL"};
 const GRADES=["Educação Infantil","Pré I","Pré II","1º ano","2º ano","3º ano","4º ano","5º ano"];
 const SUBJECTS=["Português","Matemática","Ciências","História","Geografia","Ensino Religioso","Arte","Educação Física","Projetos interdisciplinares"];
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const $=id=>document.getElementById(id);
 const toast=(msg,error=false)=>{const el=document.createElement("div");el.className="toast"+(error?" error":"");el.textContent=msg;$("toast").appendChild(el);setTimeout(()=>el.remove(),5000)};
-const views={login:$('loginView'),dash:$('dashboardView'),new:$('newPlanView'),admin:$('adminView')};
+const views={login:$('loginView'),onboarding:$('onboardingView'),dash:$('dashboardView'),new:$('newPlanView'),admin:$('adminView')};
 function show(view){Object.values(views).forEach(v=>v.classList.add('hidden'));view.classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'})}
 function go(hash){if(hash==='#novo-plano'){show(views.new);setPlanDate()}else if(hash==='#admin'){openAdminPage()}else{show(views.dash);loadPlans()}}
 function setPlanDate(){$('pDate').value=new Date().toISOString().slice(0,10)}
@@ -18,16 +21,64 @@ document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{doc
 
 async function isAdmin(user){if(user?.uid===ADMIN_UID)return true;try{const s=await getDoc(doc(db,'admin',user.uid));return s.exists()&&s.data().role==='admin'}catch(e){console.error(e);toast('Não foi possível consultar sua permissão administrativa. '+e.message,true);return false}}
 async function getTeacherProfile(uid){try{const s=await getDoc(doc(db,'professores',uid));return s.exists()?s.data():null}catch(e){console.error(e);return null}}
-async function enterUser(user){$('userLabel').textContent=user.displayName||user.email||'Usuário';$('logoutBtn').classList.remove('hidden');const admin=await isAdmin(user);$('adminBtn').classList.toggle('hidden',!admin);$('welcomeName').textContent=(user.displayName||user.email||'professora').split(' ')[0];await applyTeacherSettings(user);show(views.dash);loadPlans()}
+async function enterUser(user){
+  $('userLabel').textContent=user.displayName||user.email||'Usuário';
+  $('logoutBtn').classList.remove('hidden');
+  const admin=await isAdmin(user);
+  $('adminBtn').classList.toggle('hidden',!admin);
+  $('welcomeName').textContent=(user.displayName||user.email||'professora').split(' ')[0];
+  const profile=await getTeacherProfile(user.uid);
+  if(!admin && !profile?.cadastroCompleto){
+    fillOnboarding(profile,user);
+    show(views.onboarding);
+    return;
+  }
+  await applyTeacherSettings(user);
+  show(views.dash);
+  loadPlans();
+}
 onAuthStateChanged(auth,user=>{if(user)enterUser(user);else{$('logoutBtn').classList.add('hidden');$('adminBtn').classList.add('hidden');show(views.login)}});
 
 $('loginBtn').onclick=async()=>{const email=$('email').value.trim(),pass=$('password').value;if(!email||!pass)return toast('Preencha e-mail e senha.',true);try{const r=await signInWithEmailAndPassword(auth,email,pass);await enterUser(r.user)}catch(e){console.error(e);toast('Não foi possível entrar: '+friendly(e),true)}};
-$('registerBtn').onclick=async()=>{const name=$('regName').value.trim(),email=$('regEmail').value.trim(),p=$('regPassword').value,p2=$('regPassword2').value;if(!name||!email||p.length<6||p!==p2)return toast('Confira nome, e-mail e senhas.',true);try{const r=await createUserWithEmailAndPassword(auth,email,p);await updateProfile(r.user,{displayName:name});await setDoc(doc(db,'professores',r.user.uid),{uid:r.user.uid,nome:name,email,criadoEm:serverTimestamp(),ativo:true,turmas:[],disciplinas:[],escola:'',modalidade:'Regular',cabecalhoTipo:'',cabecalhoTexto:'',acessoGratuito:false},{merge:true});toast('Conta criada com sucesso!');await enterUser(r.user)}catch(e){console.error(e);toast('Não foi possível criar a conta: '+friendly(e),true)}};
+$('registerBtn').onclick=async()=>{const name=$('regName').value.trim(),email=$('regEmail').value.trim(),p=$('regPassword').value,p2=$('regPassword2').value;if(!name||!email||p.length<6||p!==p2)return toast('Confira nome, e-mail e senhas.',true);try{const r=await createUserWithEmailAndPassword(auth,email,p);await updateProfile(r.user,{displayName:name});await setDoc(doc(db,'professores',r.user.uid),{uid:r.user.uid,nome:name,email,criadoEm:serverTimestamp(),ativo:true,turmas:[],disciplinas:[],escola:'',modalidade:'Regular',cabecalhoTipo:'',cabecalhoTexto:'',acessoGratuito:false,cadastroCompleto:false},{merge:true});toast('Conta criada! Agora complete seu cadastro profissional.');await enterUser(r.user)}catch(e){console.error(e);toast('Não foi possível criar a conta: '+friendly(e),true)}};
 $('forgot').onclick=async()=>{const email=$('email').value.trim();if(!email)return toast('Digite seu e-mail primeiro.',true);try{await sendPasswordResetEmail(auth,email);toast('Link de redefinição enviado para seu e-mail.')}catch(e){toast('Não foi possível enviar: '+friendly(e),true)}};
 $('googleBtn').onclick=async()=>{try{const r=await signInWithPopup(auth,new GoogleAuthProvider());if(!await getDoc(doc(db,'professores',r.user.uid)).then(s=>s.exists()))await setDoc(doc(db,'professores',r.user.uid),{uid:r.user.uid,nome:r.user.displayName||'',email:r.user.email||'',criadoEm:serverTimestamp(),ativo:true,turmas:[],disciplinas:[],escola:'',modalidade:'Regular',cabecalhoTipo:'',cabecalhoTexto:'',acessoGratuito:false},{merge:true});await enterUser(r.user)}catch(e){toast('Login com Google não concluído: '+friendly(e),true)}};
-$('googleRegisterBtn').onclick=async()=>{try{const r=await signInWithPopup(auth,new GoogleAuthProvider());const ref=doc(db,'professores',r.user.uid);const profile=await getDoc(ref);if(!profile.exists()){await setDoc(ref,{uid:r.user.uid,nome:r.user.displayName||'',email:r.user.email||'',criadoEm:serverTimestamp(),ativo:true,turmas:[],disciplinas:[],escola:'',modalidade:'Regular',cabecalhoTipo:'',cabecalhoTexto:'',acessoGratuito:false,provedor:'google'},{merge:true});toast('Conta criada com Google com sucesso!')}else{toast('Conta Google reconhecida. Entrando...')}await enterUser(r.user)}catch(e){console.error(e);toast('Não foi possível criar a conta com Google: '+friendly(e),true)}};
+$('googleRegisterBtn').onclick=async()=>{try{const r=await signInWithPopup(auth,new GoogleAuthProvider());const ref=doc(db,'professores',r.user.uid);const profile=await getDoc(ref);if(!profile.exists()){await setDoc(ref,{uid:r.user.uid,nome:r.user.displayName||'',email:r.user.email||'',criadoEm:serverTimestamp(),ativo:true,turmas:[],disciplinas:[],escola:'',modalidade:'Regular',cabecalhoTipo:'',cabecalhoTexto:'',acessoGratuito:false,provedor:'google',cadastroCompleto:false},{merge:true});toast('Conta criada com Google! Agora complete seu cadastro profissional.')}else{toast('Conta Google reconhecida. Entrando...')}await enterUser(r.user)}catch(e){console.error(e);toast('Não foi possível criar a conta com Google: '+friendly(e),true)}};
 $('logoutBtn').onclick=()=>signOut(auth);
 $('demoBtn').onclick=()=>{toast('Modo demonstração: os planos criados aqui NÃO são salvos.');show(views.new);setPlanDate();$('demoMode').value='true';document.querySelectorAll('#newPlanView input,#newPlanView textarea').forEach(x=>x.value='')};
+
+function fillOnboarding(profile,user){
+  $('onName').value=profile?.nome||user.displayName||'';
+  $('onPhone').value=profile?.whatsapp||'';
+  $('onSchool').value=profile?.escola||'';
+  $('onNetwork').value=profile?.redeEnsino||'';
+  $('onCity').value=profile?.cidade||'';
+  $('onState').value=profile?.estado||'';
+  $('onMode').value=profile?.modalidade||'Regular';
+  $('onRole').value=profile?.funcao||'Professora';
+  $('onHeaderType').value=profile?.cabecalhoTipo||'';
+  $('onNotes').value=profile?.observacoesAdmin||'';
+  document.querySelectorAll('.on-grade').forEach(c=>c.checked=(profile?.turmas||[]).includes(c.value));
+  document.querySelectorAll('.on-subject').forEach(c=>c.checked=(profile?.disciplinas||[]).includes(c.value));
+  $('pixKeyDisplay').textContent=PIX_KEY&&PIX_KEY!=='COLOQUE_SUA_CHAVE_PIX_AQUI'?PIX_KEY:'Configure sua chave Pix no app.js';
+  $('copyPixBtn').disabled=!PIX_KEY||PIX_KEY==='COLOQUE_SUA_CHAVE_PIX_AQUI';
+}
+
+$('copyPixBtn').onclick=async()=>{if(!PIX_KEY||PIX_KEY==='COLOQUE_SUA_CHAVE_PIX_AQUI')return toast('Configure sua chave Pix no app.js para liberar a cópia.',true);try{await navigator.clipboard.writeText(PIX_KEY);toast('Chave Pix copiada.');}catch(e){toast('Não foi possível copiar automaticamente.',true)}};
+$('continueOnboardingBtn').onclick=async()=>{
+  const user=auth.currentUser;if(!user)return toast('Sua sessão expirou. Entre novamente.',true);
+  const turmas=[...document.querySelectorAll('.on-grade:checked')].map(c=>c.value);
+  const disciplinas=[...document.querySelectorAll('.on-subject:checked')].map(c=>c.value);
+  const nome=$('onName').value.trim(), escola=$('onSchool').value.trim(), cidade=$('onCity').value.trim();
+  if(!nome||!escola||!cidade||!$('onState').value||!turmas.length||!disciplinas.length)return toast('Preencha nome, escola, cidade, estado, pelo menos uma turma e uma disciplina.',true);
+  const dados={uid:user.uid,nome,email:user.email||'',whatsapp:$('onPhone').value.trim(),escola,redeEnsino:$('onNetwork').value, cidade,estado:$('onState').value,modalidade:$('onMode').value,funcao:$('onRole').value,turmas,disciplinas,cabecalhoTipo:$('onHeaderType').value,cabecalhoTexto:HEADER_LABELS[$('onHeaderType').value]||'',observacoesAdmin:$('onNotes').value.trim(),cadastroCompleto:true,statusSolicitacao:'pendente',enviadoEm:serverTimestamp()};
+  try{
+    await setDoc(doc(db,'professores',user.uid),{...dados,ativo:true,acessoGratuito:false},{merge:true});
+    await setDoc(doc(db,'solicitacoes_professoras',user.uid),{...dados,status:'pendente',recebidoEm:serverTimestamp()},{merge:true});
+    toast('Formulário enviado para a administração. Seu espaço está pronto!');
+    await applyTeacherSettings(user);show(views.dash);loadPlans();
+  }catch(e){console.error(e);toast('Não foi possível enviar o formulário: '+e.message,true)}
+};
 
 async function applyTeacherSettings(user){const p=await getTeacherProfile(user.uid);const allowedGrades=(p?.turmas||[]).filter(x=>GRADES.includes(x));const allowedSubjects=(p?.disciplinas||[]).filter(x=>SUBJECTS.includes(x));fillSelect($('pGrade'),allowedGrades.length?allowedGrades:GRADES);fillSelect($('pSubject'),allowedSubjects.length?allowedSubjects:SUBJECTS);if(p){$('pSchool').value=p.escola||'';$('pMode').value=p.modalidade||'Regular';$('teacherHeaderNote').textContent=p.cabecalhoTexto||'';}}
 function fillSelect(el,items){el.innerHTML=items.map(x=>`<option>${esc(x)}</option>`).join('')}
@@ -46,8 +97,20 @@ async function openAdminPage(){const u=auth.currentUser;if(!u)return;if(!(await 
 $('adminBtn').onclick=()=>openAdminPage();
 $('adminBackBtn').onclick=()=>{show(views.dash);loadPlans()};
 $('adminRefresh').onclick=()=>loadAdminData();
+$('adminRefreshRequests').onclick=()=>loadAdminRequests();
 let teachers=[];
-async function loadAdminData(){if(auth.currentUser?.uid!==ADMIN_UID&&!await isAdmin(auth.currentUser))return;$('adminUidLabel').textContent=auth.currentUser.uid;$('adminTeachersGrid').innerHTML='<div class="empty">Carregando professoras...</div>';try{const snap=await getDocs(collection(db,'professores'));teachers=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));$('adminTeacherCount').textContent=teachers.length;renderTeacherCards(teachers)}catch(e){console.error(e);$('adminTeachersGrid').innerHTML='<div class="empty"><strong>Erro ao carregar professoras.</strong><br><small>'+esc(e.message)+'</small></div>';toast('Erro no Firestore: '+e.message,true)}}
+async function loadAdminData(){if(auth.currentUser?.uid!==ADMIN_UID&&!await isAdmin(auth.currentUser))return;$('adminUidLabel').textContent=auth.currentUser.uid;$('adminTeachersGrid').innerHTML='<div class="empty">Carregando professoras...</div>';try{const snap=await getDocs(collection(db,'professores'));teachers=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));$('adminTeacherCount').textContent=teachers.length;renderTeacherCards(teachers);loadAdminRequests()}catch(e){console.error(e);$('adminTeachersGrid').innerHTML='<div class="empty"><strong>Erro ao carregar professoras.</strong><br><small>'+esc(e.message)+'</small></div>';toast('Erro no Firestore: '+e.message,true)}}
+async function loadAdminRequests(){
+  if(!auth.currentUser)return;
+  try{
+    const snap=await getDocs(collection(db,'solicitacoes_professoras'));
+    const rows=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.recebidoEm?.seconds||0)-(a.recebidoEm?.seconds||0));
+    if(!rows.length){$('adminRequestsGrid').innerHTML='<div class="empty">Nenhum formulário recebido ainda.</div>';return;}
+    $('adminRequestsGrid').innerHTML=rows.map(r=>`<article class="request-card"><div class="request-head"><div><h3>${esc(r.nome||'Sem nome')}</h3><p>${esc(r.email||'')} · ${esc(r.whatsapp||'')}</p></div><span class="request-status">${esc(r.status||'pendente')}</span></div><div class="request-grid"><div><b>Escola</b><span>${esc(r.escola||'—')}</span></div><div><b>Local</b><span>${esc([r.cidade,r.estado].filter(Boolean).join(' / ')||'—')}</span></div><div><b>Rede</b><span>${esc(r.redeEnsino||'—')}</span></div><div><b>Modalidade</b><span>${esc(r.modalidade||'—')}</span></div><div><b>Turmas</b><span>${esc((r.turmas||[]).join(', ')||'—')}</span></div><div><b>Disciplinas</b><span>${esc((r.disciplinas||[]).join(', ')||'—')}</span></div><div><b>Cabeçalho</b><span>${esc(HEADER_LABELS[r.cabecalhoTipo]||'Não definido')}</span></div><div><b>Observações</b><span>${esc(r.observacoesAdmin||'—')}</span></div></div><button class="btn btn-outline wide" data-approve-request="${esc(r.uid||r.id)}">Marcar como analisado</button></article>`).join('');
+    document.querySelectorAll('[data-approve-request]').forEach(b=>b.onclick=async()=>{try{await setDoc(doc(db,'solicitacoes_professoras',b.dataset.approveRequest),{status:'analisado',analisadoEm:serverTimestamp()},{merge:true});toast('Solicitação marcada como analisada.');loadAdminRequests()}catch(e){toast('Erro: '+e.message,true)}});
+  }catch(e){console.error(e);$('adminRequestsGrid').innerHTML='<div class="empty"><strong>Erro ao carregar formulários.</strong><br><small>'+esc(e.message)+'</small></div>';toast('Erro no Firestore: '+e.message,true)}
+}
+
 function renderTeacherCards(list){if(!list.length){$('adminTeachersGrid').innerHTML='<div class="empty">Nenhuma professora cadastrada ainda.</div>';return}$('adminTeachersGrid').innerHTML=list.map(t=>`<article class="teacher-card"><div class="teacher-top"><div class="avatar">${esc((t.nome||t.email||'?').slice(0,1).toUpperCase())}</div><div><h3>${esc(t.nome||'Sem nome')}</h3><p>${esc(t.email||'')}</p></div><span class="status ${t.ativo===false?'off':'on'}">${t.ativo===false?'Inativa':'Ativa'}</span></div><div class="teacher-tags">${(t.turmas||[]).map(x=>`<span>${esc(x)}</span>`).join('')||'<span>Nenhuma turma</span>'}${(t.disciplinas||[]).map(x=>`<span>${esc(x)}</span>`).join('')}</div><div class="teacher-meta"><b>${esc(t.escola||'Escola não definida')}</b><span>${esc(t.modalidade||'Regular')} · ${t.acessoGratuito?'Acesso liberado':'Acesso padrão'}</span></div><button class="btn btn-outline wide" data-edit-teacher="${t.id}">Administrar professora</button></article>`).join('');document.querySelectorAll('[data-edit-teacher]').forEach(b=>b.onclick=()=>openTeacherEditor(teachers.find(t=>t.id===b.dataset.editTeacher)))}
 $('teacherSearch').addEventListener('input',()=>{const q=$('teacherSearch').value.toLowerCase();renderTeacherCards(teachers.filter(t=>(t.nome+' '+t.email+' '+(t.escola||'')).toLowerCase().includes(q)))});
 function openTeacherEditor(t){if(!t)return;$('teacherEditUid').value=t.uid||t.id;$('teacherEditName').value=t.nome||'';$('teacherEditEmail').value=t.email||'';$('teacherEditSchool').value=t.escola||'';$('teacherEditMode').value=t.modalidade||'Regular';$('teacherEditHeaderType').value=t.cabecalhoTipo||'';$('teacherEditHeader').value=HEADER_LABELS[t.cabecalhoTipo]||t.cabecalhoTexto||'';$('teacherEditFree').checked=!!t.acessoGratuito;$('teacherEditActive').checked=t.ativo!==false;document.querySelectorAll('.assign-grade').forEach(c=>c.checked=(t.turmas||[]).includes(c.value));document.querySelectorAll('.assign-subject').forEach(c=>c.checked=(t.disciplinas||[]).includes(c.value));$('teacherModal').classList.remove('hidden')}
