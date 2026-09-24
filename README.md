@@ -1,33 +1,54 @@
-# PlanejaEdu — versão completa
+# PlanejaEdu — versão com Administração de Professoras
 
-## O que foi melhorado
-- Interface profissional e responsiva.
-- Área "Meus planos de aula" exclusiva para cada conta.
-- Planos salvos pelo UID do Firebase.
-- Busca por título, turma e disciplina.
-- Visualização do plano em formato de documento.
-- Exclusão de planos.
-- Criação de planos com identificação, objetivos, BNCC, conteúdo, metodologia, recursos, avaliação e observações.
-- Área Admin protegida pelo UID principal e pela coleção `/admin/{UID}`.
-- Tratamento visível de erros do Firestore.
-- Modo demonstração sem salvar planos reais.
+## O que foi acrescentado
+- Área **Administrar professoras** exclusiva para administradores.
+- Cadastro/listagem das professoras vindas do Firestore em `professores`.
+- Busca por nome, e-mail ou escola.
+- Edição individual de cada professora.
+- Vinculação de **turmas**.
+- Vinculação de **disciplinas**.
+- Definição de **escola/instituição**.
+- Definição de **Regular / Integral**.
+- Definição do tipo de cabeçalho:
+  - Creche — apenas cabeçalho
+  - Escola — cabeçalho ESCOLA PROJETO
+  - Escola — cabeçalho ESCOLA PROJETO INTEGRAL
+- Campo para colocar o **texto exato do cabeçalho**.
+- Ativar/desativar conta.
+- Liberar acesso sem pagamento.
+- As turmas e disciplinas configuradas pelo administrador passam a aparecer no formulário da professora.
+- Cada plano continua vinculado ao UID da professora.
+- A consulta de planos não exige índice composto do Firestore: os registros são ordenados no navegador.
 
-## Seu administrador principal
-UID:
-BDmAQWzHytWVucAsuy4JiCOlIgB2
+## Administrador principal
+UID configurado:
+`BDmAQWzHytWVucAsuy4JiCOlIgB2`
 
-## Firebase
-1. Firebase Console → Authentication → Sign-in method:
-   habilite E-mail/senha e, se quiser, Google.
-2. Authentication → Settings → Authorized domains:
-   adicione seu domínio Netlify.
-3. Firestore Database → Rules:
-   copie o conteúdo de `firestore.rules` e publique.
-4. Faça login com a conta principal.
-5. O sistema reconhece automaticamente o UID acima como administrador principal.
-6. Para outro administrador, crie `/admin/UID` com:
-   role: "admin"
-   O botão "Área Admin" aparece somente para administradores.
+## Estrutura do professor
+Coleção `professores`, documento com ID igual ao UID:
 
-## Netlify
-Publique a pasta/ZIP como site estático. Não é necessário Node para esta versão.
+```text
+uid
+nome
+email
+escola
+modalidade
+cabecalhoTipo
+cabecalhoTexto
+turmas: []
+disciplinas: []
+ativo: true/false
+acessoGratuito: true/false
+criadoEm
+atualizadoEm
+```
+
+## Publicação
+1. Substitua os arquivos do site pelo conteúdo deste ZIP.
+2. Publique no Netlify.
+3. No Firebase Authentication, habilite E-mail/Senha e, se quiser, Google.
+4. No Firestore, publique `firestore.rules`.
+5. Faça login com a conta administradora. O botão **Área Admin** aparecerá automaticamente.
+
+## Segurança
+A interface não é a segurança. A autorização real é feita pelas regras do Firestore. O administrador principal é identificado pelo UID acima; administradores adicionais podem ser registrados em `/admin/UID` pelo administrador principal.
