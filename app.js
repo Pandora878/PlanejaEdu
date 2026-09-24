@@ -61,7 +61,7 @@ async function openApp(userName="Professor(a)"){
     currentProfile = await loadMyProfile(auth.currentUser);
   } else {
     currentProfile = {
-      uid:"demo", name:userName, role:"admin", demo:true,
+      uid:"demo", name:userName, role:"demo", demo:true,
       allowedStages:[...STAGES], allowedSubjects:[...SUBJECTS],
       features:Object.fromEntries(FEATURES.map(x=>[x[0],true])),
       institution:"escola", accessStatus:"approved", paymentStatus:"exempt"
@@ -252,10 +252,17 @@ async function loadMyProfile(user){
 function isAdmin(){
   return currentProfile?.role === "admin";
 }
+function isDemo(){
+  return currentProfile?.demo === true || demo === true || auth?.currentUser?.uid === "demo";
+}
 
 function applyPermissions(){
   const admin = isAdmin();
   $("adminMenuWrap").classList.toggle("hidden",!admin);
+  const demoMode = isDemo();
+  $("headerNewBtn").classList.toggle("hidden", demoMode || (!admin && currentProfile?.features?.criarPlano===false));
+  $("heroNewBtn").classList.toggle("hidden", demoMode || (!admin && currentProfile?.features?.criarPlano===false));
+  $("demoNotice")?.classList.toggle("hidden", !demoMode);
 
   const stages = currentProfile?.allowedStages || [];
   const subjects = currentProfile?.allowedSubjects || [];
@@ -273,9 +280,6 @@ function applyPermissions(){
   // Hide modules that the admin did not grant.
   document.querySelectorAll('[data-page="bncc"]').forEach(el=>el.closest("nav")?.classList.toggle("hidden",!admin && features.bncc===false));
   document.querySelectorAll('[data-page="calendario"]').forEach(el=>el.closest("nav")?.classList.toggle("hidden",!admin && features.planejamento===false));
-  $("headerNewBtn").classList.toggle("hidden",!admin && features.criarPlano===false);
-  $("heroNewBtn").classList.toggle("hidden",!admin && features.criarPlano===false);
-
   if(!admin && features.criarPlano===false) {
     showToast("Sua conta está aguardando a liberação de áreas pelo administrador.");
   }
@@ -430,6 +434,7 @@ $("signupForm").addEventListener("submit", async e=>{
 
 $("demoBtn").addEventListener("click", ()=>{
   demo = true;
+  currentProfile = {uid:"demo", name:"Modo demonstração", role:"demo", demo:true, accessStatus:"approved", paymentStatus:"exempt", allowedStages:[...STAGES], allowedSubjects:[...SUBJECTS], features:{criarPlano:false,bncc:true,planejamento:true,pdf:true,modelos:true}};
   openApp("Modo demonstração");
 });
 
@@ -448,10 +453,12 @@ $("heroNewBtn").onclick=()=>goPage("novo");
 document.querySelector(".text-btn").onclick=()=>goPage("planos");
 
 function goPage(page){
+  if(page === "admin" && !isAdmin()){ showToast("Área exclusiva do administrador."); return; }
+  if(page === "novo" && isDemo()){ showDemoNotice(); return; }
   document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
   $("page-"+page).classList.remove("hidden");
   document.querySelectorAll(".nav-btn[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
-  const titles={dashboard:"Início",novo:"Novo plano",planos:"Meus planos",calendario:"Planejamento semanal",bncc:"BNCC"};
+  const titles={dashboard:"Início",novo:"Novo plano",planos:"Meus planos",calendario:"Planejamento semanal",bncc:"BNCC",admin:"Administração"};
   $("pageTitle").textContent=titles[page]||"PlanejaEdu";
   if(page==="planos") renderPlans();
   if(page==="calendario") renderCalendar();
@@ -564,7 +571,7 @@ $("previewBtn").onclick=()=>printPlan(buildPlan(), true);
 $("planForm").addEventListener("submit", async e=>{
   e.preventDefault();
 
-  if(currentProfile?.demo === true || auth?.currentUser?.uid === "demo"){
+  if(isDemo()){
     showDemoNotice();
     return;
   }
@@ -575,13 +582,11 @@ $("planForm").addEventListener("submit", async e=>{
   const plan=buildPlan();
   if(!plan.tema){showToast("Informe o tema.");return;}
   try{
-    if(demo){
-      const arr=JSON.parse(localStorage.getItem(DEMO_KEY)||"[]");
-      plan.id=crypto.randomUUID(); plan.criadoEm=new Date().toISOString(); arr.unshift(plan);
-      localStorage.setItem(DEMO_KEY,JSON.stringify(arr));
-    }else{
-      await addDoc(collection(db,"planos"), {...plan, criadoEm:serverTimestamp(), uid:auth.currentUser.uid});
+    if(isDemo()) {
+      showDemoNotice();
+      return;
     }
+    await addDoc(collection(db,"planos"), {...plan, criadoEm:serverTimestamp(), uid:auth.currentUser.uid});
     showToast("Plano salvo com sucesso!");
     await refreshPlans();
     printPlan(plan,true);
@@ -594,8 +599,8 @@ function buildPlan(){
 }
 
 async function refreshPlans(){
-  if(demo){
-    plans=JSON.parse(localStorage.getItem(DEMO_KEY)||"[]");
+  if(isDemo()){
+    plans=[];
   }else if(firebaseReady && auth.currentUser){
     const snap=await getDocs(query(collection(db,"planos"),orderBy("criadoEm","desc")));
     plans=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -641,10 +646,9 @@ $("filterDisc").addEventListener("change",renderPlans);
 window.viewPlan=(id)=>{const p=plans.find(x=>x.id===id);if(p)printPlan(p,false)};
 window.printSaved=(id)=>{const p=plans.find(x=>x.id===id);if(p)printPlan(p,true)};
 window.deletePlan=async(id)=>{
+  if(isDemo()){ showDemoNotice(); return; }
   if(!confirm("Excluir este plano?"))return;
-  if(demo){
-    plans=plans.filter(p=>p.id!==id); localStorage.setItem(DEMO_KEY,JSON.stringify(plans));
-  }else await deleteDoc(doc(db,"planos",id));
+  await deleteDoc(doc(db,"planos",id));
   refreshPlans(); showToast("Plano excluído.");
 };
 

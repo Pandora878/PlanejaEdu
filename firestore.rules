@@ -2,10 +2,9 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // O documento /admin/{UID} é criado manualmente pelo proprietário do projeto.
-    // O cliente pode apenas ler o próprio documento para descobrir se é admin.
-    // Não permitimos que usuários alterem essa coleção pelo site.
     match /admin/{userId} {
+      // Somente a própria conta pode ler seu registro administrativo.
+      // Escrita sempre deve ser feita manualmente pelo proprietário/admin SDK.
       allow read: if request.auth != null && request.auth.uid == userId;
       allow create, update, delete: if false;
     }
@@ -16,25 +15,57 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/admin/$(request.auth.uid)).data.role == "admin";
     }
 
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
     match /usuarios/{userId} {
-      allow read: if request.auth != null && (
-        request.auth.uid == userId || isAdmin()
+      allow read: if isOwner(userId) || isAdmin();
+
+      // A conta só pode ser criada como professora; ninguém pode criar uma conta admin pelo cliente.
+      allow create: if isOwner(userId)
+        && request.resource.data.role == "teacher"
+        && request.resource.data.accessStatus == "pending"
+        && request.resource.data.paymentStatus == "pending"
+        && request.resource.data.allowedStages.size() == 0
+        && request.resource.data.allowedSubjects.size() == 0
+        && request.resource.data.features.criarPlano == false;
+
+      // Só o administrador pode alterar permissões, instituição, acesso, pagamento e observações.
+      // A professora pode apenas registrar o pedido de pagamento.
+      allow update: if isAdmin() || (
+        isOwner(userId)
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.accessStatus == resource.data.accessStatus
+        && request.resource.data.paymentStatus == resource.data.paymentStatus
+        && request.resource.data.allowedStages == resource.data.allowedStages
+        && request.resource.data.allowedSubjects == resource.data.allowedSubjects
+        && request.resource.data.features == resource.data.features
+        && request.resource.data.institution == resource.data.institution
+        && request.resource.data.notes == resource.data.notes
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["paymentRequested", "paymentRequestedAt"])
       );
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && (
-        request.auth.uid == userId || isAdmin()
-      );
+
       allow delete: if isAdmin();
     }
 
     match /planos/{planId} {
-      allow read: if request.auth != null && (
-        resource.data.uid == request.auth.uid || isAdmin()
+      allow read: if isAdmin() || (
+        request.auth != null && resource.data.uid == request.auth.uid
       );
-      allow create: if request.auth != null
-        && request.resource.data.uid == request.auth.uid;
-      allow update, delete: if request.auth != null && (
-        resource.data.uid == request.auth.uid || isAdmin()
+
+      // Admin pode criar; professora só pode criar se o próprio administrador
+      // tiver liberado o recurso e o acesso estiver aprovado.
+      allow create: if isAdmin() || (
+        request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.accessStatus == "approved"
+        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.features.criarPlano == true
+      );
+
+      allow update, delete: if isAdmin() || (
+        request.auth != null && resource.data.uid == request.auth.uid
+        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.accessStatus == "approved"
       );
     }
   }
