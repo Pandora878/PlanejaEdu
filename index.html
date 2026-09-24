@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlanejaEdu — Planos de Aula</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js" defer></script>
+</head>
+<body>
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="brand-mark">📚</div>
+      <h1>PlanejaEdu</h1>
+      <p>Gerenciador completo de planos de aula</p>
+      <form id="loginForm">
+        <label>E-mail
+          <input id="email" type="email" placeholder="professor@escola.com" required>
+        </label>
+        <label>Senha
+          <input id="password" type="password" placeholder="••••••••" required>
+        </label>
+        <button class="primary full" type="submit">Entrar</button>
+      </form>
+      <button id="demoBtn" class="secondary full">Entrar no modo demonstração</button>
+      <small>Para usar o Firebase, preencha <b>firebase-config.js</b>.</small>
+    </div>
+  </div>
+
+  <div id="app" class="app hidden">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark small">📚</div>
+        <div><strong>PlanejaEdu</strong><span>Planos de Aula</span></div>
+      </div>
+      <nav>
+        <button data-page="dashboard" class="nav-btn active">🏠 Início</button>
+        <button data-page="novo" class="nav-btn">📝 Novo plano</button>
+        <button data-page="planos" class="nav-btn">📚 Meus planos</button>
+        <button data-page="calendario" class="nav-btn">📅 Planejamento</button>
+        <button data-page="bncc" class="nav-btn">🎯 BNCC</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <button id="logoutBtn" class="nav-btn">↪ Sair</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h2 id="pageTitle">Início</h2>
+          <span id="welcomeText">Bem-vindo(a)!</span>
+        </div>
+        <button id="headerNewBtn" class="primary">+ Novo plano</button>
+      </header>
+
+      <section id="page-dashboard" class="page">
+        <div class="hero">
+          <div>
+            <span class="eyebrow">PLANEJAMENTO ESCOLAR</span>
+            <h1>Organize seus planos de aula em um só lugar.</h1>
+            <p>Crie, salve, pesquise, imprima e gere PDFs com o cabeçalho correto para cada instituição.</p>
+            <button class="primary" id="heroNewBtn">Criar plano agora</button>
+          </div>
+          <div class="hero-icon">🗂️</div>
+        </div>
+        <div class="stats">
+          <div class="stat"><span>Planos salvos</span><strong id="statPlans">0</strong></div>
+          <div class="stat"><span>Este mês</span><strong id="statMonth">0</strong></div>
+          <div class="stat"><span>Favoritos</span><strong id="statFav">0</strong></div>
+        </div>
+        <div class="section-head"><h3>Últimos planos</h3><button class="text-btn" data-page="planos">Ver todos</button></div>
+        <div id="recentPlans" class="cards"></div>
+      </section>
+
+      <section id="page-novo" class="page hidden">
+        <div class="form-layout">
+          <form id="planForm" class="form-card">
+            <div class="section-title"><span>1</span><div><h3>Identificação</h3><p>Defina instituição, etapa, turma e componente.</p></div></div>
+            <div class="grid two">
+              <label>Instituição
+                <select id="instituicao" required>
+                  <option value="">Selecione</option>
+                  <option value="creche">Creche</option>
+                  <option value="escola">Escola Municipal Professora Irmã Blandina CISZ</option>
+                  <option value="integral">Educação em Tempo Integral</option>
+                </select>
+              </label>
+              <label>Ano/Série
+                <select id="etapa" required>
+                  <option value="">Selecione</option>
+                  <option>Educação Infantil</option><option>Pré I</option><option>Pré II</option>
+                  <option>1º ano</option><option>2º ano</option><option>3º ano</option><option>4º ano</option><option>5º ano</option>
+                </select>
+              </label>
+              <label>Turma <input id="turma" placeholder="Ex.: 3º ano A"></label>
+              <label>Componente curricular
+                <select id="disciplina" required>
+                  <option value="">Selecione</option>
+                  <option>Português</option><option>Matemática</option><option>Ciências</option><option>História</option>
+                  <option>Geografia</option><option>Ensino Religioso</option><option>Arte</option><option>Educação Física</option>
+                  <option>Projetos interdisciplinares</option>
+                </select>
+              </label>
+              <label>Professor(a) <input id="professor" placeholder="Nome do professor"></label>
+              <label>Data <input id="data" type="date"></label>
+              <label>Duração <input id="duracao" placeholder="Ex.: 2 aulas / 90 minutos"></label>
+              <label>Unidade temática <input id="unidade" placeholder="Ex.: Números"></label>
+            </div>
+
+            <div class="section-title"><span>2</span><div><h3>Conteúdo pedagógico</h3><p>Preencha manualmente ou use um modelo rápido.</p></div></div>
+            <div class="quick-models">
+              <button type="button" data-model="leitura">📖 Leitura e interpretação</button>
+              <button type="button" data-model="fracao">➗ Frações</button>
+              <button type="button" data-model="ciencias">🔬 Ciências</button>
+              <button type="button" data-model="projeto">🌱 Projeto interdisciplinar</button>
+            </div>
+            <label>Tema <input id="tema" required placeholder="Tema da aula"></label>
+            <label>Objeto de conhecimento <textarea id="objeto" rows="2"></textarea></label>
+            <label>Habilidades da BNCC <textarea id="habilidades" rows="3" placeholder="Código e descrição da habilidade"></textarea></label>
+            <div class="grid two">
+              <label>Objetivo geral <textarea id="objetivoGeral" rows="4"></textarea></label>
+              <label>Objetivos específicos <textarea id="objetivosEspecificos" rows="4"></textarea></label>
+            </div>
+            <label>Conteúdos <textarea id="conteudos" rows="4"></textarea></label>
+            <label>Metodologia <textarea id="metodologia" rows="5"></textarea></label>
+            <label>Desenvolvimento da aula <textarea id="desenvolvimento" rows="6"></textarea></label>
+            <label>Recursos didáticos <textarea id="recursos" rows="3"></textarea></label>
+            <label>Atividades <textarea id="atividades" rows="5"></textarea></label>
+            <div class="grid two">
+              <label>Avaliação <textarea id="avaliacao" rows="4"></textarea></label>
+              <label>Adaptações e inclusão <textarea id="inclusao" rows="4"></textarea></label>
+            </div>
+            <label>Referências <textarea id="referencias" rows="3"></textarea></label>
+
+            <div class="form-actions">
+              <button type="button" id="clearBtn" class="secondary">Limpar</button>
+              <button type="button" id="previewBtn" class="secondary">Pré-visualizar</button>
+              <button type="submit" class="primary">Salvar plano</button>
+            </div>
+          </form>
+
+          <aside class="preview-card">
+            <div class="preview-head"><strong>Prévia</strong><span id="previewInstitution">Selecione a instituição</span></div>
+            <div id="miniHeader" class="mini-header">O cabeçalho aparecerá aqui.</div>
+            <div id="miniPreview" class="mini-preview">
+              <h3 id="miniTema">Tema da aula</h3>
+              <p id="miniMeta">Ano/Série • Componente</p>
+              <hr>
+              <strong>Objetivo geral</strong><p id="miniObjetivo">—</p>
+              <strong>Metodologia</strong><p id="miniMetodologia">—</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="page-planos" class="page hidden">
+        <div class="toolbar">
+          <input id="searchPlans" placeholder="🔎 Pesquisar por tema, turma ou disciplina">
+          <select id="filterDisc"><option value="">Todas as disciplinas</option></select>
+        </div>
+        <div id="allPlans" class="cards"></div>
+      </section>
+
+      <section id="page-calendario" class="page hidden">
+        <div class="calendar-card">
+          <h3>Planejamento semanal</h3>
+          <div id="weeklyGrid" class="weekly-grid"></div>
+        </div>
+      </section>
+
+      <section id="page-bncc" class="page hidden">
+        <div class="bncc-card">
+          <h3>Banco de habilidades</h3>
+          <p>Cadastre ou consulte códigos e descrições usados nos seus planos. O banco pode ser ampliado no Firebase.</p>
+          <div id="bnccList" class="bncc-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="printArea" class="print-area"></div>
+  <div id="toast" class="toast"></div>
+</body>
+</html>
