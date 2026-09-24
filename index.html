@@ -66,6 +66,9 @@
         <label>Senha<input id="regPassword" type="password" placeholder="Mínimo de 6 caracteres"></label>
         <label>Confirmar senha<input id="regPassword2" type="password" placeholder="Repita a senha"></label>
         <button id="registerBtn" class="btn btn-primary wide">Criar minha conta <span>→</span></button>
+        <div class="divider"><span>ou</span></div>
+        <button id="googleRegisterBtn" class="btn btn-google wide"><span class="google-mark">G</span> Criar conta com Google</button>
+        <p class="google-help">Use sua conta Google para criar o acesso sem precisar definir uma senha.</p>
       </div>
       <small class="security">🔒 Seus dados são protegidos pelo Firebase.</small>
     </div>
@@ -88,12 +91,6 @@
         <label>Disciplina<select id="pSubject"></select></label>
         <label>Escola / instituição<input id="pSchool" placeholder="Nome da escola"></label>
         <label>Modalidade<select id="pMode"><option>Regular</option><option>Integral</option></select></label>
-        <label class="header-select-label">Cabeçalho institucional<select id="pHeaderType">
-          <option value="">Sem cabeçalho</option>
-          <option value="escola">Município + Secretaria + Escola</option>
-          <option value="integral">Secretaria + Educação em Tempo Integral</option>
-        </select><small>Escolha o modelo que será usado no PDF e na visualização do plano.</small></label>
-        <div id="headerPreview" class="header-preview-wrap"></div>
       </div></div>
       <div class="form-section"><h3>Planejamento pedagógico</h3>
         <label>Objetivos de aprendizagem<textarea id="pObjectives" placeholder="Descreva os objetivos..."></textarea></label>
