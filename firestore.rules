@@ -2,31 +2,39 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Perfil de cada conta. O próprio usuário pode ler seu perfil.
-    // A edição de permissões deve ser feita pelo administrador.
+    // O documento /admin/{UID} é criado manualmente pelo proprietário do projeto.
+    // O cliente pode apenas ler o próprio documento para descobrir se é admin.
+    // Não permitimos que usuários alterem essa coleção pelo site.
+    match /admin/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create, update, delete: if false;
+    }
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admin/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admin/$(request.auth.uid)).data.role == "admin";
+    }
+
     match /usuarios/{userId} {
       allow read: if request.auth != null && (
-        request.auth.uid == userId ||
-        request.auth.token.email == "admin@planejaedu.com"
+        request.auth.uid == userId || isAdmin()
       );
       allow create: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null && (
-        request.auth.token.email == "admin@planejaedu.com"
+        request.auth.uid == userId || isAdmin()
       );
+      allow delete: if isAdmin();
     }
 
     match /planos/{planId} {
       allow read: if request.auth != null && (
-        resource.data.uid == request.auth.uid ||
-        request.auth.token.email == "admin@planejaedu.com"
+        resource.data.uid == request.auth.uid || isAdmin()
       );
-
       allow create: if request.auth != null
         && request.resource.data.uid == request.auth.uid;
-
       allow update, delete: if request.auth != null && (
-        resource.data.uid == request.auth.uid ||
-        request.auth.token.email == "admin@planejaedu.com"
+        resource.data.uid == request.auth.uid || isAdmin()
       );
     }
   }
