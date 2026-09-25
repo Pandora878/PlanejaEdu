@@ -7,6 +7,68 @@ const defaultData={user:null,theme:"light",headers:[
 {name:"Irmã Blandina",desc:"Secretaria Municipal de Educação",type:"Secretaria"},
 {name:"Integral (Lajeado Grande)",desc:"Cabeçalho de projeto",type:"Integral"}
 ],classes:[],students:[],materials:[]};
+
+// IA LOCAL GRATUITA: roda no navegador usando Transformers.js + Qwen2.5-0.5B-Instruct.
+// Não usa OpenAI, não exige chave e não envia o conteúdo da professora para um servidor de IA.
+let localAI=null;
+let localAILoading=null;
+let localAIMode='WebGPU';
+
+async function loadLocalAI(statusElId='ai-status'){
+  const status=document.getElementById(statusElId);
+  const setStatus=(msg,kind='')=>{if(status){status.textContent=msg;status.className='ai-status '+kind;}};
+  if(localAI) return localAI;
+  if(localAILoading) return localAILoading;
+  localAILoading=(async()=>{
+    setStatus('Baixando a IA gratuita para este navegador. Na primeira vez pode demorar alguns minutos…','loading');
+    try{
+      const mod=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1');
+      const {pipeline,env}=mod;
+      env.allowLocalModels=false;
+      const model='onnx-community/Qwen2.5-0.5B-Instruct';
+      try{
+        localAIMode='WebGPU';
+        localAI=await pipeline('text-generation',model,{dtype:'q4',device:'webgpu'});
+      }catch(webgpuError){
+        console.warn('WebGPU indisponível; usando WASM.',webgpuError);
+        localAIMode='WASM';
+        localAI=await pipeline('text-generation',model,{dtype:'q4',device:'wasm'});
+      }
+      setStatus(`IA carregada no seu dispositivo (${localAIMode}).`,'ready');
+      return localAI;
+    }catch(err){
+      console.error(err);
+      localAI=null;
+      localAIMode='offline';
+      setStatus('Não foi possível carregar a IA local. O gerador estruturado continua disponível.','error');
+      throw err;
+    }finally{localAILoading=null;}
+  })();
+  return localAILoading;
+}
+
+function aiSystemPrompt(type){
+ return `Você é o PlanejaEdu, um assistente pedagógico brasileiro. Produza material REALMENTE UTILIZÁVEL por uma professora, em português do Brasil, sem frases genéricas. Respeite exatamente o tipo solicitado: ${type}. Seja específico ao ano, disciplina e tema. Não diga que é uma IA, não peça para a professora preencher partes que você consegue criar. Use títulos claros, exemplos concretos, atividades aplicáveis e avaliação. Quando faltarem dados, faça uma escolha pedagógica razoável e deixe isso explícito.`;
+}
+
+async function generateWithAI({type,grade,sub,prompt,shift,header,conversation=false}){
+ const generator=await loadLocalAI('ai-status');
+ const userPrompt=conversation
+   ? prompt
+   : `Tipo de material: ${type}\nAno/série: ${grade}\nDisciplina: ${sub}\nTurno: ${shift}\nCabeçalho: ${header}\nTema/pedido da professora: ${prompt}\n\nCrie agora o material completo. Para ${type}, inclua todos os elementos que normalmente seriam necessários para uso em sala de aula. Se for Slides, entregue 8 slides numerados com título, texto curto, atividade/visual sugerido e fala da professora. Se for Prova e avaliação, entregue questões variadas e gabarito. Se for Lista de exercícios, entregue exercícios graduados e gabarito. Se for Jogo educativo, crie regras, preparação, rodadas, perguntas e pontuação. Se for Mapa mental, organize uma estrutura hierárquica pronta para visualização. Se for Adaptação, adapte concretamente o material para necessidades educacionais diversas. Se for Comunicação, entregue uma mensagem pronta para enviar. Se for Assistente IA, responda diretamente à pergunta.`;
+ const messages=[{role:'system',content:aiSystemPrompt(type)},{role:'user',content:userPrompt}];
+ const out=await generator(messages,{max_new_tokens:900,temperature:0.7,do_sample:true,return_full_text:false});
+ let text=Array.isArray(out)?out[0]?.generated_text:'' : out?.generated_text || '';
+ if(Array.isArray(text)) text=text[text.length-1]?.content || text.map(x=>x.content||'').join('\n');
+ if(!text) throw new Error('A IA não retornou texto.');
+ return String(text).trim();
+}
+
+function showAIPanel(){
+ const el=document.getElementById('ai-status');
+ if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
 let data=JSON.parse(localStorage.getItem(KEY)||"null")||defaultData;
 function save(){localStorage.setItem(KEY,JSON.stringify(data))}
 function show(id){$$(".screen").forEach(x=>x.classList.add("hidden"));$("#"+id).classList.remove("hidden")}
@@ -39,25 +101,42 @@ return pageHead("Criar material","Planeje aulas, atividades e avaliações com u
 <div class="grid2"><div class="field"><label>Ano/série</label><input id="gen-grade" placeholder="Ex.: 4º ano"></div><div class="field"><label>Disciplina</label><input id="gen-subject" placeholder="Ex.: Ciências"></div></div>
 <div class="field"><label>O que deseja preparar?</label><textarea id="gen-prompt" rows="5" placeholder="Descreva o tema, objetivo, duração, perfil da turma e o que gostaria de incluir..."></textarea></div>
 <div class="grid2"><div class="field"><label>Cabeçalho</label><select id="gen-header">${data.headers.map((h,i)=>`<option value="${i}">${h.name}</option>`).join("")}</select></div><div class="field"><label>Turno</label><select id="gen-shift"><option>Matutino</option><option>Vespertino</option><option>Noturno</option><option>Integral</option></select></div></div>
-<button class="primary" onclick="generateLocal()"><i class="icon icon-sparkles"></i> Gerar material</button></div>
+<div class="ai-bar"><div><strong>IA PlanejaEdu</strong><span id="ai-status" class="ai-status">IA local gratuita ainda não carregada.</span></div><button class="ghost" onclick="loadLocalAI()"><i class="icon icon-sparkles"></i> Carregar IA</button></div><button class="primary" onclick="generateLocal()"><i class="icon icon-sparkles"></i> Gerar com IA</button></div>
 <div id="gen-output"></div>`;
 }
 function openGenerator(t){render("planner");setTimeout(()=>$("#gen-type").value=t,0)}
-function generateLocal(){
- const type=$("#gen-type").value,grade=$("#gen-grade").value||"turma",sub=$("#gen-subject").value||"a disciplina",prompt=$("#gen-prompt").value||"o tema indicado";
- const h=data.headers[Number($("#gen-header").value)]?.name||"PlanejaEdu";
- const shift=$("#gen-shift").value;
- const material=buildMaterial(type,grade,sub,prompt,shift,h);
- data.materials.push({type,date:new Date().toLocaleDateString("pt-BR"),title:prompt,content:material});save();
+async function generateLocal(){
+ const type=$('#gen-type').value,grade=$('#gen-grade').value||'turma',sub=$('#gen-subject').value||'a disciplina',prompt=$('#gen-prompt').value||'o tema indicado';
+ const h=data.headers[Number($('#gen-header').value)]?.name||'PlanejaEdu';
+ const shift=$('#gen-shift').value;
+ const out=$('#gen-output');
+ out.innerHTML=`<div class="panel material-panel"><div class="ai-generating"><div class="spinner"></div><div><h3>Preparando sua aula com a IA…</h3><p class="sub">Na primeira utilização, o modelo é baixado para o navegador e depois fica em cache.</p></div></div></div>`;
+ let material=''; let usedAI=false;
+ try{
+   material=await generateWithAI({type,grade,sub,prompt,shift,header:h});
+   usedAI=true;
+ }catch(err){
+   console.warn('IA local indisponível, usando gerador estruturado.',err);
+   material=buildMaterial(type,grade,sub,prompt,shift,h);
+ }
+ data.materials.push({type,date:new Date().toLocaleDateString('pt-BR'),title:prompt,content:material,ai:usedAI});save();
  let extra='';
- if(type === "Slides") extra=`<div class="slide-actions"><button class="primary" onclick="openSlideDeck(${JSON.stringify(prompt)},${JSON.stringify(grade)},${JSON.stringify(sub)},${JSON.stringify(shift)},${JSON.stringify(h)})"><i class="icon icon-presentation"></i> Visualizar apresentação</button><button class="ghost" onclick="downloadPptx(${JSON.stringify(prompt)},${JSON.stringify(grade)},${JSON.stringify(sub)},${JSON.stringify(shift)},${JSON.stringify(h)})"><i class="icon icon-download"></i> Baixar PowerPoint</button></div>`;
- if(type === "Prova e avaliação") extra=`<div class="slide-actions"><button class="primary" onclick="printMaterial()"><i class="icon icon-printer"></i> Imprimir avaliação</button><button class="ghost" onclick="toggleAnswerKey()"><i class="icon icon-eye"></i> Mostrar/ocultar gabarito</button></div>`;
- if(type === "Lista de exercícios") extra=`<div class="slide-actions"><button class="primary" onclick="printMaterial()"><i class="icon icon-printer"></i> Imprimir lista</button><button class="ghost" onclick="copyText(${JSON.stringify(material)})"><i class="icon icon-copy"></i> Copiar</button></div>`;
- if(type === "Jogos educativos") extra=`<div class="slide-actions"><button class="primary" onclick="startGeneratedGame()"><i class="icon icon-play"></i> Jogar agora</button><button class="ghost" onclick="printMaterial()"><i class="icon icon-printer"></i> Imprimir regras</button></div><div id="game-area"></div>`;
- if(type === "Assistente IA") extra=`<div class="assistant-box"><div id="assistant-chat" class="assistant-chat"><div class="chat-bubble bot">Olá! Sou o Assistente Pedagógico do PlanejaEdu. Faça uma pergunta sobre sua turma, aula, avaliação ou adaptação.</div></div><div class="chat-compose"><input id="assistant-input" placeholder="Ex.: como trabalhar frações no 5º ano?"><button class="primary" onclick="askAssistant()"><i class="icon icon-send"></i></button></div></div>`;
- if(type === "Comunicação") extra=`<div class="slide-actions"><button class="primary" onclick="copyText(${JSON.stringify(material)})"><i class="icon icon-copy"></i> Copiar mensagem</button><button class="ghost" onclick="openWhatsAppMessage(${JSON.stringify(material)})"><i class="icon icon-message-circle"></i> Abrir WhatsApp</button></div>`;
+ if(type === 'Slides') extra=`<div class="slide-actions"><button class="primary" onclick="openSlideDeck(${JSON.stringify(prompt)},${JSON.stringify(grade)},${JSON.stringify(sub)},${JSON.stringify(shift)},${JSON.stringify(h)})"><i class="icon icon-presentation"></i> Visualizar apresentação</button><button class="ghost" onclick="downloadPptx(${JSON.stringify(prompt)},${JSON.stringify(grade)},${JSON.stringify(sub)},${JSON.stringify(shift)},${JSON.stringify(h)})"><i class="icon icon-download"></i> Baixar PowerPoint</button></div>`;
+ if(type === 'Prova e avaliação') extra=`<div class="slide-actions"><button class="primary" onclick="printMaterial()"><i class="icon icon-printer"></i> Imprimir avaliação</button><button class="ghost" onclick="toggleAnswerKey()"><i class="icon icon-eye"></i> Mostrar/ocultar gabarito</button></div>`;
+ if(type === 'Lista de exercícios') extra=`<div class="slide-actions"><button class="primary" onclick="printMaterial()"><i class="icon icon-printer"></i> Imprimir lista</button><button class="ghost" onclick="copyText(${JSON.stringify(material)})"><i class="icon icon-copy"></i> Copiar</button></div>`;
+ if(type === 'Jogos educativos') extra=`<div class="slide-actions"><button class="primary" onclick="startGeneratedGame()"><i class="icon icon-play"></i> Jogar agora</button><button class="ghost" onclick="printMaterial()"><i class="icon icon-printer"></i> Imprimir regras</button></div><div id="game-area"></div>`;
+ if(type === 'Assistente IA') extra=`<div class="assistant-box"><div class="ai-badge">IA local gratuita • ${localAIMode}</div><div id="assistant-chat" class="assistant-chat"><div class="chat-bubble bot">${esc(material)}</div></div><div class="chat-compose"><input id="assistant-input" placeholder="Faça outra pergunta para a IA…"><button class="primary" onclick="askAssistant()"><i class="icon icon-send"></i></button></div></div>`;
+ if(type === 'Comunicação') extra=`<div class="slide-actions"><button class="primary" onclick="copyText(${JSON.stringify(material)})"><i class="icon icon-copy"></i> Copiar mensagem</button><button class="ghost" onclick="openWhatsAppMessage(${JSON.stringify(material)})"><i class="icon icon-message-circle"></i> Abrir WhatsApp</button></div>`;
  const visual=renderMaterialVisual(type,grade,sub,prompt,material);
- $("#gen-output").innerHTML=`<div class="panel material-panel"><div class="result-head"><div><div class="eyebrow">MATERIAL PRONTO</div><h2>${esc(type)}</h2></div><button class="ghost" onclick="copyText(${JSON.stringify(material)})"><i class="icon icon-copy"></i> Copiar</button></div>${extra}${visual}<details class="raw-details"><summary>Ver texto completo</summary><div class="output">${esc(material)}</div></details></div>`;
+ out.innerHTML=`<div class="panel material-panel"><div class="result-head"><div><div class="eyebrow">${usedAI?'IA PLANEJAEDU':'MATERIAL ESTRUTURADO'}</div><h2>${esc(type)}</h2></div><button class="ghost" onclick="copyText(${JSON.stringify(material)})"><i class="icon icon-copy"></i> Copiar</button></div>${extra}${visual}<details class="raw-details"><summary>Ver texto completo gerado pela IA</summary><div class="output">${esc(material)}</div></details></div>`;
+}
+
+async function askAssistant(){
+ const input=$('#assistant-input'); if(!input)return; const q=input.value.trim(); if(!q)return;
+ const chat=$('#assistant-chat'); chat.innerHTML+=`<div class="chat-bubble user">${esc(q)}</div><div class="chat-bubble bot">Pensando…</div>`; input.value='';
+ try{ const answer=await generateWithAI({type:'Assistente IA',grade:$('#gen-grade')?.value||'não informado',sub:$('#gen-subject')?.value||'pedagogia',prompt:q,shift:$('#gen-shift')?.value||'não informado',header:'PlanejaEdu',conversation:true}); chat.lastElementChild.textContent=answer; }
+ catch(e){ chat.lastElementChild.textContent='Não consegui carregar a IA local neste navegador. Clique em “Carregar IA” e tente novamente.'; }
+ chat.scrollTop=chat.scrollHeight;
 }
 
 function renderMaterialVisual(type,grade,sub,prompt,material){
