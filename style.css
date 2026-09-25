@@ -9,3 +9,46 @@
 @media print{.sidebar,.mobile-head,.page-head,.slide-actions,.raw-details,#toast{display:none!important}.page{padding:0}.panel{border:0;box-shadow:none}.assessment-sheet,.exercise-sheet{border:0}}
 .ai-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:18px 0;padding:14px 16px;border:1px solid #e1ddff;border-radius:16px;background:linear-gradient(90deg,#faf9ff,#f4f0ff)}
 .ai-status{display:block;font-size:13px;color:#6b6f8f;margin-top:4px}.ai-status.loading{color:#6b4df6}.ai-status.ready{color:#138a5b}.ai-status.error{color:#b42318}.ai-badge{display:inline-flex;margin-bottom:10px;padding:6px 10px;border-radius:999px;background:#eee9ff;color:#5b42e8;font-size:12px;font-weight:700}.ai-generating{display:flex;align-items:center;gap:14px;padding:30px}.spinner{width:28px;height:28px;border:3px solid #ddd7ff;border-top-color:#6246ea;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== PlanejaEdu UI refresh ===== */
+:root{
+  --brand:#6547f5;--brand-2:#7a5cff;--ink:#111c46;--muted:#7180a0;--line:#e4e7f2;
+  --surface:#ffffff;--soft:#f2efff;--page:#f7f8ff;--radius:18px;
+}
+html{scroll-behavior:smooth}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--page);color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button{transition:transform .15s ease,box-shadow .15s ease,background .15s ease,border-color .15s ease}
+button:hover{transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+.primary{background:linear-gradient(135deg,var(--brand),var(--brand-2));box-shadow:0 10px 24px rgba(101,71,245,.18)}
+.primary:hover{box-shadow:0 14px 30px rgba(101,71,245,.25)}
+.ghost{padding:9px 12px;border-radius:11px}
+.topbar{height:78px;max-width:1360px;margin:auto;padding:18px 30px}
+.brand{font-size:18px;letter-spacing:-.4px}.brand-mark{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#efeaff,#e3ddff);box-shadow:inset 0 0 0 1px #ded6ff}
+.brand-mark svg{width:19px;height:19px;stroke-width:2.3}
+.hero{max-width:1240px;padding:78px 30px 72px;grid-template-columns:minmax(0,1.08fr) minmax(380px,.82fr);gap:80px}
+.hero h1{font-size:clamp(54px,6.1vw,76px);font-weight:800;letter-spacing:-5px}
+.hero p{max-width:670px;font-size:19px;line-height:1.72}
+.hero-actions{margin:28px 0 22px}.primary.big{border-radius:13px;font-size:16px;padding:15px 22px}
+.ai-preview{padding:0}.window{border-radius:28px;padding:9px;box-shadow:0 28px 80px rgba(52,49,109,.12);transform:translateY(0);transition:transform .25s ease,box-shadow .25s ease}.window:hover{transform:translateY(-3px);box-shadow:0 35px 95px rgba(52,49,109,.16)}
+.window-head{padding:15px 17px}.window-body{padding:28px}.fake-input{background:#fbfbff}.result{border:1px solid #e2dcff;background:linear-gradient(135deg,#f1edff,#ebe6ff)}
+.tools-grid{max-width:1240px;margin:0 auto;padding:0 30px 80px;gap:14px}
+.tool{min-height:164px;border-radius:18px;padding:22px;box-shadow:0 4px 18px rgba(30,39,86,.03);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.tool:hover{transform:translateY(-3px);box-shadow:0 14px 35px rgba(30,39,86,.08);border-color:#d5cef9}.tool i{width:46px;height:46px;border-radius:13px;background:#f0edff;box-shadow:inset 0 0 0 1px #e4ddff}.tool i svg{width:21px;height:21px;stroke-width:2}
+.tool h3{font-size:16px;margin:17px 0 7px}.tool p{font-size:13px;line-height:1.55;margin:0}
+.trust{font-size:13px}.trust span{box-shadow:0 1px 5px rgba(50,40,100,.08)}
+.auth{background:radial-gradient(circle at 50% 10%,#fff,#f4f3ff 75%)}.auth-card{border-radius:24px;box-shadow:0 30px 90px rgba(47,43,110,.11);padding:40px}.auth-card input{background:#fbfcff}
+.dashboard{background:#f7f8ff}.sidebar{width:252px;padding:24px 16px;background:rgba(255,255,255,.94);backdrop-filter:blur(12px)}.sidebar nav{gap:3px}.nav{font-size:13px;padding:11px 12px}.nav svg{width:18px;height:18px;vertical-align:-4px;margin-right:7px}.nav.active{box-shadow:inset 3px 0 0 var(--brand)}
+.main{min-width:0}.page{max-width:1240px;padding:42px 44px 70px}.page-head{margin-bottom:24px}.page h1{font-size:34px;letter-spacing:-1.3px}.panel,.stat,.tool-btn,.header-card{box-shadow:0 3px 18px rgba(30,39,86,.025)}
+.tool-picker{gap:9px}.tool-btn{font-size:13px;padding:15px 16px;border-radius:14px;display:flex;align-items:center;gap:9px}.tool-btn svg{width:17px;height:17px;color:var(--brand);flex:none}
+.ai-bar{background:linear-gradient(100deg,#fbfaff,#f2efff);border-color:#e2dcff}.ai-bar .ghost{border:1px solid #ddd5ff;background:white}
+.modal{backdrop-filter:blur(5px)}
+/* Prevent costly visual work from affecting initial scrolling. */
+.tools-grid,.panel,.tool{content-visibility:auto;contain-intrinsic-size:180px}
+/* SVG icons replace the old icon-font look. */
+i.icon{display:inline-flex;align-items:center;justify-content:center;font-style:normal}.icon svg{width:18px;height:18px;display:block}
+[data-lucide]{width:18px;height:18px;stroke:currentColor;display:inline-block;vertical-align:middle;flex:none}
+.slide-actions .primary,.slide-actions .ghost{display:inline-flex;align-items:center;gap:7px}.slide-actions svg{width:17px;height:17px}
+@media(max-width:1000px){.hero{grid-template-columns:1fr;gap:40px}.ai-preview{max-width:650px}.tools-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.hero{padding:48px 20px 45px}.hero h1{letter-spacing:-3px}.tools-grid{grid-template-columns:repeat(2,1fr);padding:0 20px 55px}.sidebar{width:280px}.page{padding:28px 20px 55px}}
+@media(max-width:520px){.hero h1{font-size:43px}.hero p{font-size:16px}.tools-grid{grid-template-columns:1fr}.topbar{padding:15px 20px}.auth-card{padding:28px 22px}.window-body{padding:22px}.window-head b{font-size:13px}}

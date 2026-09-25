@@ -26,11 +26,16 @@ async function loadLocalAI(statusElId='ai-status'){
       const {pipeline,env}=mod;
       env.allowLocalModels=false;
       const model='onnx-community/Qwen2.5-0.5B-Instruct';
-      try{
-        localAIMode='WebGPU';
-        localAI=await pipeline('text-generation',model,{dtype:'q4',device:'webgpu'});
-      }catch(webgpuError){
-        console.warn('WebGPU indisponível; usando WASM.',webgpuError);
+      if(navigator.gpu){
+        try{
+          localAIMode='WebGPU';
+          localAI=await pipeline('text-generation',model,{dtype:'q4',device:'webgpu'});
+        }catch(webgpuError){
+          console.warn('WebGPU indisponível; usando WASM.',webgpuError);
+          localAIMode='WASM';
+          localAI=await pipeline('text-generation',model,{dtype:'q4',device:'wasm'});
+        }
+      }else{
         localAIMode='WASM';
         localAI=await pipeline('text-generation',model,{dtype:'q4',device:'wasm'});
       }
@@ -57,7 +62,7 @@ async function generateWithAI({type,grade,sub,prompt,shift,header,conversation=f
    ? prompt
    : `Tipo de material: ${type}\nAno/série: ${grade}\nDisciplina: ${sub}\nTurno: ${shift}\nCabeçalho: ${header}\nTema/pedido da professora: ${prompt}\n\nCrie agora o material completo. Para ${type}, inclua todos os elementos que normalmente seriam necessários para uso em sala de aula. Se for Slides, entregue 8 slides numerados com título, texto curto, atividade/visual sugerido e fala da professora. Se for Prova e avaliação, entregue questões variadas e gabarito. Se for Lista de exercícios, entregue exercícios graduados e gabarito. Se for Jogo educativo, crie regras, preparação, rodadas, perguntas e pontuação. Se for Mapa mental, organize uma estrutura hierárquica pronta para visualização. Se for Adaptação, adapte concretamente o material para necessidades educacionais diversas. Se for Comunicação, entregue uma mensagem pronta para enviar. Se for Assistente IA, responda diretamente à pergunta.`;
  const messages=[{role:'system',content:aiSystemPrompt(type)},{role:'user',content:userPrompt}];
- const out=await generator(messages,{max_new_tokens:900,temperature:0.7,do_sample:true,return_full_text:false});
+ const out=await generator(messages,{max_new_tokens:700,temperature:0.65,do_sample:true,return_full_text:false});
  let text=Array.isArray(out)?out[0]?.generated_text:'' : out?.generated_text || '';
  if(Array.isArray(text)) text=text[text.length-1]?.content || text.map(x=>x.content||'').join('\n');
  if(!text) throw new Error('A IA não retornou texto.');
@@ -205,8 +210,18 @@ function openSlideDeck(prompt,grade,subject,shift,header){
   const render=()=>{const sl=slides[idx]; modal.innerHTML=`<div class="slide-modal-card"><button class="close" onclick="document.getElementById('slide-modal').classList.add('hidden')">×</button><div class="slide-deck-head"><b>Apresentação pronta</b><span>${idx+1} / ${slides.length}</span></div><div class="slide-canvas"><img src="${sl.image}" alt="Imagem educativa para ${esc(sl.title)}"><div class="slide-overlay"></div><div class="slide-content"><div class="slide-kicker">${esc(sl.kicker)}</div><h2>${esc(sl.title)}</h2><p>${esc(sl.body)}</p></div></div><div class="slide-nav"><button class="ghost" ${idx===0?'disabled':''} onclick="slidePrev()">Anterior</button><button class="primary" ${idx===slides.length-1?'disabled':''} onclick="slideNext()">Próximo</button><button class="ghost" onclick="downloadPptx(${JSON.stringify(prompt)},${JSON.stringify(grade)},${JSON.stringify(subject)},${JSON.stringify(shift)},${JSON.stringify(header)})"><i class="icon icon-download"></i> Baixar .pptx</button></div><small class="slide-credit">Imagens ilustrativas: banco de imagens Unsplash. Você pode substituir as imagens no PowerPoint.</small></div>`; modal.classList.remove('hidden'); window.slidePrev=()=>{if(idx>0){idx--;render()}}; window.slideNext=()=>{if(idx<slides.length-1){idx++;render()}};}; render();
 }
 async function imageToData(url){try{const r=await fetch(url,{mode:'cors'});const b=await r.blob();return await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(b)});}catch(e){return null;}}
+async function ensurePptx(){
+  if(window.pptxgen) return true;
+  return new Promise((resolve,reject)=>{
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
+    s.onload=()=>resolve(true); s.onerror=()=>reject(new Error('Não foi possível carregar o gerador de PowerPoint.'));
+    document.head.appendChild(s);
+  });
+}
 async function downloadPptx(prompt,grade,subject,shift,header){
-  if(typeof pptxgen==='undefined'){toast('O gerador de PowerPoint não carregou. Verifique sua conexão e tente novamente.');return}
+  try{await ensurePptx();}catch(e){toast(e.message);return}
+  if(typeof pptxgen==='undefined'){toast('Gerador de PowerPoint indisponível.');return}
   toast('Montando o PowerPoint com imagens...'); const slides=makeSlideDeck(prompt,grade,subject,shift,header), pptx=new pptxgen(); pptx.layout='LAYOUT_WIDE'; pptx.author='PlanejaEdu'; pptx.subject='Apresentação pedagógica'; pptx.title=prompt||'Apresentação PlanejaEdu';
   for(const sl of slides){const ps=pptx.addSlide();ps.background={color:'F7F7FF'};const dataUri=await imageToData(sl.image);if(dataUri)ps.addImage({data:dataUri,x:7.0,y:0,w:6.33,h:7.5});ps.addShape(pptx.ShapeType.rect,{x:0,y:0,w:7.2,h:7.5,fill:{color:'F7F7FF'},line:{color:'F7F7FF'}});ps.addText(sl.kicker,{x:.6,y:.65,w:5.7,h:.3,fontFace:'Aptos',fontSize:10,bold:true,charSpacing:2.5,color:'6046F5'});ps.addText(sl.title,{x:.6,y:1.25,w:5.9,h:1.15,fontFace:'Aptos Display',fontSize:28,bold:true,color:'0E1C4A',margin:0,fit:'shrink'});ps.addText(sl.body,{x:.6,y:2.75,w:5.7,h:3.2,fontFace:'Aptos',fontSize:18,color:'31446E',fit:'shrink',valign:'mid',margin:.05});ps.addText('PlanejaEdu • gratuito',{x:.6,y:7.05,w:3,h:.25,fontFace:'Aptos',fontSize:9,color:'7282A3'});}
   await pptx.writeFile({fileName:'PlanejaEdu_Apresentacao.pptx'}); toast('PowerPoint criado com sucesso!');
@@ -262,3 +277,15 @@ $$(".nav").forEach(n=>n.addEventListener("click",()=>{render(n.dataset.page);$("
 if(data.theme==="dark")document.body.classList.add("dark");
 if(data.user){$("#user-name").textContent=data.user;$("#avatar").textContent=data.user[0].toUpperCase()}
 show("landing");
+
+
+
+// Ícones SVG leves e consistentes em conteúdos renderizados dinamicamente.
+let iconPaintQueued=false;
+const iconObserver=new MutationObserver((mutations)=>{
+  const needs=mutations.some(m=>[...m.addedNodes].some(n=>n.nodeType===1 && (n.matches?.('i.icon') || n.querySelector?.('i.icon'))));
+  if(!needs || iconPaintQueued || !window.paintPlanejaIcons) return;
+  iconPaintQueued=true;
+  requestAnimationFrame(()=>{iconPaintQueued=false; window.paintPlanejaIcons();});
+});
+iconObserver.observe(document.body,{subtree:true,childList:true});
