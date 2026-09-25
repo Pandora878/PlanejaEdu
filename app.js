@@ -49,8 +49,58 @@ function generateLocal(){
  const shift=$("#gen-shift").value;
  const material=buildMaterial(type,grade,sub,prompt,shift,h);
  data.materials.push({type,date:new Date().toLocaleDateString("pt-BR"),title:prompt,content:material});save();
- $("#gen-output").innerHTML=`<div class="panel"><div class="result-head"><div><div class="eyebrow">MATERIAL GERADO</div><h2>${esc(type)}</h2></div><button class="ghost" onclick="copyText(${JSON.stringify(material)})"><i class="icon icon-copy"></i> Copiar</button></div><div class="output">${esc(material)}</div></div>`;
+ const slideActions = type === "Slides" ? `<div class="slide-actions"><button class="primary" onclick="openSlideDeck(${JSON.stringify(prompt)},${JSON.stringify(grade)},${JSON.stringify(sub)},${JSON.stringify(shift)},${JSON.stringify(h)})"><i class="icon icon-presentation"></i> Visualizar apresentação</button><button class="ghost" onclick="downloadPptx(${JSON.stringify(prompt)},${JSON.stringify(grade)},${JSON.stringify(sub)},${JSON.stringify(shift)},${JSON.stringify(h)})"><i class="icon icon-download"></i> Baixar PowerPoint</button></div>` : ``;
+ $("#gen-output").innerHTML=`<div class="panel"><div class="result-head"><div><div class="eyebrow">MATERIAL GERADO</div><h2>${esc(type)}</h2></div><button class="ghost" onclick="copyText(${JSON.stringify(material)})"><i class="icon icon-copy"></i> Copiar</button></div>${slideActions}<div class="output">${esc(material)}</div></div>`;
 }
+
+
+const slideImages = {
+ classroom: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1600&q=85",
+ science: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1600&q=85",
+ books: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1600&q=85",
+ nature: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1600&q=85",
+ technology: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=85",
+ art: "https://images.unsplash.com/photo-1549490349-8643362247b5?auto=format&fit=crop&w=1600&q=85",
+ children: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1600&q=85",
+ math: "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=1600&q=85"
+};
+function pickSlideImages(subject, prompt){
+  const t=(subject+" "+prompt).toLowerCase(); let primary=slideImages.classroom;
+  if(/ciên|biolog|quím|físic|experi|laborat/.test(t)) primary=slideImages.science;
+  else if(/matem|fraç|númer|geometr|cálcul/.test(t)) primary=slideImages.math;
+  else if(/arte|desen|pint|música/.test(t)) primary=slideImages.art;
+  else if(/tecnolog|informát|comput/.test(t)) primary=slideImages.technology;
+  else if(/nature|ambient|cadeia alimentar|animais|plantas|floresta|água/.test(t)) primary=slideImages.nature;
+  else if(/liter|portugu|leitura|livro|texto/.test(t)) primary=slideImages.books;
+  return [primary,slideImages.classroom,slideImages.books,slideImages.children,primary,slideImages.nature,slideImages.classroom,slideImages.books];
+}
+function makeSlideDeck(prompt,grade,subject,shift,header){
+  const imgs=pickSlideImages(subject,prompt), title=prompt||"Tema da aula";
+  return [
+    {title,kicker:"PLANEJAEDU • APRESENTAÇÃO",body:`${grade} • ${subject} • ${shift}`,image:imgs[0]},
+    {title:"Objetivos de aprendizagem",kicker:"01 • O QUE VAMOS APRENDER",body:`• Compreender os conceitos principais de ${title}.\n• Relacionar o conteúdo ao cotidiano.\n• Participar de atividades e explicar o que foi aprendido.`,image:imgs[1]},
+    {title:"Ativação do conhecimento",kicker:"02 • VAMOS COMEÇAR",body:`Pergunta disparadora:\nO que você já sabe sobre ${title}?\n\nConverse em duplas e registre uma hipótese.`,image:imgs[2]},
+    {title:"Conceito principal",kicker:"03 • EXPLICAÇÃO",body:`Apresente ${title} em partes curtas, usando exemplos concretos, palavras-chave e perguntas para a turma.`,image:imgs[3]},
+    {title:"Exemplo prático",kicker:"04 • OBSERVE E PENSE",body:`Mostre uma situação real relacionada a ${title}. Peça que os estudantes identifiquem o que está acontecendo e justifiquem suas respostas.`,image:imgs[4]},
+    {title:"Desafio da turma",kicker:"05 • MÃO NA MASSA",body:`Em duplas ou grupos, resolvam uma tarefa relacionada a ${title}. Cada grupo deve explicar sua estratégia.`,image:imgs[5]},
+    {title:"Sistematização",kicker:"06 • O QUE FICA",body:`Palavras-chave\n• conceito\n• características\n• exemplos\n• aplicação\n\nPeça uma frase-síntese para fechar a aula.`,image:imgs[6]},
+    {title:"Avaliação e fechamento",kicker:"07 • SAÍDA",body:`Bilhete de saída: escreva uma coisa que aprendeu sobre ${title} e uma pergunta que ainda ficou.\n\nCabeçalho: ${header}`,image:imgs[7]}
+  ];
+}
+function openSlideDeck(prompt,grade,subject,shift,header){
+  const slides=makeSlideDeck(prompt,grade,subject,shift,header); let modal=document.getElementById('slide-modal');
+  if(!modal){ modal=document.createElement('div'); modal.id='slide-modal'; modal.className='modal'; document.body.appendChild(modal); }
+  let idx=0;
+  const render=()=>{const sl=slides[idx]; modal.innerHTML=`<div class="slide-modal-card"><button class="close" onclick="document.getElementById('slide-modal').classList.add('hidden')">×</button><div class="slide-deck-head"><b>Apresentação pronta</b><span>${idx+1} / ${slides.length}</span></div><div class="slide-canvas"><img src="${sl.image}" alt="Imagem educativa para ${esc(sl.title)}"><div class="slide-overlay"></div><div class="slide-content"><div class="slide-kicker">${esc(sl.kicker)}</div><h2>${esc(sl.title)}</h2><p>${esc(sl.body)}</p></div></div><div class="slide-nav"><button class="ghost" ${idx===0?'disabled':''} onclick="slidePrev()">Anterior</button><button class="primary" ${idx===slides.length-1?'disabled':''} onclick="slideNext()">Próximo</button><button class="ghost" onclick="downloadPptx(${JSON.stringify(prompt)},${JSON.stringify(grade)},${JSON.stringify(subject)},${JSON.stringify(shift)},${JSON.stringify(header)})"><i class="icon icon-download"></i> Baixar .pptx</button></div><small class="slide-credit">Imagens ilustrativas: banco de imagens Unsplash. Você pode substituir as imagens no PowerPoint.</small></div>`; modal.classList.remove('hidden'); window.slidePrev=()=>{if(idx>0){idx--;render()}}; window.slideNext=()=>{if(idx<slides.length-1){idx++;render()}};}; render();
+}
+async function imageToData(url){try{const r=await fetch(url,{mode:'cors'});const b=await r.blob();return await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(b)});}catch(e){return null;}}
+async function downloadPptx(prompt,grade,subject,shift,header){
+  if(typeof pptxgen==='undefined'){toast('O gerador de PowerPoint não carregou. Verifique sua conexão e tente novamente.');return}
+  toast('Montando o PowerPoint com imagens...'); const slides=makeSlideDeck(prompt,grade,subject,shift,header), pptx=new pptxgen(); pptx.layout='LAYOUT_WIDE'; pptx.author='PlanejaEdu'; pptx.subject='Apresentação pedagógica'; pptx.title=prompt||'Apresentação PlanejaEdu';
+  for(const sl of slides){const ps=pptx.addSlide();ps.background={color:'F7F7FF'};const dataUri=await imageToData(sl.image);if(dataUri)ps.addImage({data:dataUri,x:7.0,y:0,w:6.33,h:7.5});ps.addShape(pptx.ShapeType.rect,{x:0,y:0,w:7.2,h:7.5,fill:{color:'F7F7FF'},line:{color:'F7F7FF'}});ps.addText(sl.kicker,{x:.6,y:.65,w:5.7,h:.3,fontFace:'Aptos',fontSize:10,bold:true,charSpacing:2.5,color:'6046F5'});ps.addText(sl.title,{x:.6,y:1.25,w:5.9,h:1.15,fontFace:'Aptos Display',fontSize:28,bold:true,color:'0E1C4A',margin:0,fit:'shrink'});ps.addText(sl.body,{x:.6,y:2.75,w:5.7,h:3.2,fontFace:'Aptos',fontSize:18,color:'31446E',fit:'shrink',valign:'mid',margin:.05});ps.addText('PlanejaEdu • gratuito',{x:.6,y:7.05,w:3,h:.25,fontFace:'Aptos',fontSize:9,color:'7282A3'});}
+  await pptx.writeFile({fileName:'PlanejaEdu_Apresentacao.pptx'}); toast('PowerPoint criado com sucesso!');
+}
+
 function buildMaterial(type,grade,sub,prompt,shift,h){
  const common=`Cabeçalho: ${h}\nAno/série: ${grade}\nDisciplina: ${sub}\nTurno: ${shift}\nTema: ${prompt}`;
  const intro=`A proposta foi estruturada para ${grade}, considerando linguagem adequada à faixa etária, participação ativa e relação com conhecimentos prévios.`;
